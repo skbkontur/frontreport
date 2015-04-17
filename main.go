@@ -61,8 +61,8 @@ func report(w http.ResponseWriter, r *http.Request) {
 		string(bodyDump))
 
 	err = ch.Publish(
-		"elasticsearch",
-		"elasticsearch",
+		"csp",
+		"csp",
 		false,
 		false,
 		amqp.Publishing{
