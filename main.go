@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/streadway/amqp"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/streadway/amqp"
 )
 
 var (
@@ -20,7 +21,7 @@ var (
 	caCertPath     = flag.String("cacert", "", "custom CA cert file for SSL connections")
 )
 
-type CSPbody struct {
+type cspBody struct {
 	DocumentURI       string `json:"document-uri"`
 	Referrer          string `json:"referrer"`
 	BlockedURI        string `json:"blocked-uri"`
@@ -29,8 +30,8 @@ type CSPbody struct {
 	Timestamp         string `json:"@timestamp"`
 }
 
-type CSPreport struct {
-	CSPbody *CSPbody `json:"csp-report"`
+type cspReport struct {
+	Body *cspBody `json:"csp-report"`
 }
 
 func report(w http.ResponseWriter, r *http.Request) {
@@ -40,15 +41,15 @@ func report(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dec := json.NewDecoder(r.Body)
-	bodyParsed := &CSPreport{}
+	bodyParsed := &cspReport{}
 	if err := dec.Decode(bodyParsed); err != nil {
 		log.Printf("malformed JSON body: %s", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	bodyParsed.CSPbody.Timestamp = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+	bodyParsed.Body.Timestamp = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
 
-	bodyDump, err := json.Marshal(bodyParsed.CSPbody)
+	bodyDump, err := json.Marshal(bodyParsed.Body)
 	if err != nil {
 		log.Printf("error dumping back JSON body: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
