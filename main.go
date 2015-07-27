@@ -34,7 +34,19 @@ type cspReport struct {
 	Body *cspBody `json:"csp-report"`
 }
 
-func report(w http.ResponseWriter, r *http.Request) {
+type pkpReport struct {
+	DateTime                  string   `json:"date-time"`
+	Hostname                  string   `json:"hostname"`
+	Port                      int      `json:"port"`
+	EffectiveExpirationDate   string   `json:"effective-expiration-date"`
+	IncludeSubdomains         bool     `json:"include-subdomains"`
+	NotedHostname             string   `json:"noted-hostname"`
+	ServedCertificateChain    []string `json:"served-certificate-chain"`
+	ValidatedCertificateChain []string `json:"validated-certificate-chain"`
+	KnownPins                 []string `json:"known-pins"`
+}
+
+func handleCspReport(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -56,12 +68,54 @@ func report(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := fmt.Sprintf(
-		"{\"index\": {\"_index\": \"csp-report-%s\", \"_type\": \"csp-report\"}}\n%s\n",
-		time.Now().Format("2006.01.02"),
-		string(bodyDump))
+	if err := sendParsedReport(bodyDump, "csp"); err != nil {
+		log.Printf("failed to send message to RabbitMQ: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-	err = ch.Publish(
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func handlePkpReport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	dec := json.NewDecoder(r.Body)
+	bodyParsed := &pkpReport{}
+	if err := dec.Decode(bodyParsed); err != nil {
+		log.Printf("malformed JSON body: %s", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	bodyDump, err := json.Marshal(bodyParsed)
+	if err != nil {
+		log.Printf("error dumping back JSON body: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := sendParsedReport(bodyDump, "pkp"); err != nil {
+		log.Printf("failed to send message to RabbitMQ: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func sendParsedReport(reportBody []byte, reportType string) error {
+	message := fmt.Sprintf(
+		"{\"index\": {\"_index\": \"%s-report-%s\", \"_type\": \"%s-report\"}}\n%s\n",
+		reportType,
+		time.Now().Format("2006.01.02"),
+		reportType,
+		string(reportBody))
+
+	err := ch.Publish(
 		"csp",
 		"csp",
 		false,
@@ -71,13 +125,7 @@ func report(w http.ResponseWriter, r *http.Request) {
 			Timestamp:    time.Now(),
 			Body:         []byte(message),
 		})
-	if err != nil {
-		log.Printf("failed to send message to RabbitMQ: %s", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	return err
 }
 
 func main() {
@@ -111,6 +159,8 @@ func main() {
 	defer ch.Close()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", report)
+	mux.HandleFunc("/", handleCspReport)
+	mux.HandleFunc("/csp", handleCspReport)
+	mux.HandleFunc("/pkp", handlePkpReport)
 	http.ListenAndServe(fmt.Sprintf(":%s", *port), mux)
 }
