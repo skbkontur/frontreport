@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+    "os"
 	"github.com/streadway/amqp"
 )
 
@@ -19,6 +19,9 @@ var (
 	port           = flag.String("port", "8888", "port to listen")
 	amqpConnection = flag.String("amqp", "amqp://guest:guest@localhost:5672/", "amqp connection string")
 	caCertPath     = flag.String("cacert", "", "custom CA cert file for SSL connections")
+	printVersion = flag.Bool("version", false, "Print version and exit")
+
+    version = "undefined"
 )
 
 type cspBody struct {
@@ -130,7 +133,11 @@ func sendParsedReport(reportBody []byte, reportType string) error {
 
 func main() {
 	flag.Parse()
-
+    if *printVersion {
+        fmt.Println("version:",version)
+        os.Exit(0)
+    }
+    
 	var (
 		conn *amqp.Connection
 		err  error
