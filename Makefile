@@ -2,7 +2,7 @@ VERSION := $(shell git describe --always --tags --abbrev=0 | tail -c +2)
 RELEASE := $(shell git describe --always --tags | awk -F- '{ if ($$2) dot="."} END { printf "1%s%s%s%s\n",dot,$$2,dot,$$3}')
 VENDOR := "SKB Kontur"
 URL := "https://github.com/skbkontur/csp_reporter"
-LICENSE := ""
+LICENSE := "GPLv3"
 
 default: build
 
@@ -12,6 +12,9 @@ build:
 prepare:
 	go get github.com/sparrc/gdm
 	gdm restore
+
+test: prepare
+	echo "No tests"
 
 clean:
 	rm -rf build
