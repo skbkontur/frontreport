@@ -1,0 +1,55 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "imR2wF388/0fBU6RRWx8RvTi8Q8=",
+			"path": "github.com/facebookgo/clock",
+			"revision": "600d898af40aa09a7a93ecb9265d87b0504b6f03",
+			"revisionTime": "2015-04-10T01:09:13Z"
+		},
+		{
+			"checksumSHA1": "/jfkiemtHBkQcesTAtOso945hTY=",
+			"path": "github.com/facebookgo/limitgroup",
+			"revision": "6abd8d71ec01451d7f1929eacaa263bbe2935d05",
+			"revisionTime": "2015-06-12T19:09:41Z"
+		},
+		{
+			"checksumSHA1": "6viCX3VLBaomwZukWCTmipmQWO8=",
+			"path": "github.com/facebookgo/muster",
+			"revision": "fd3d7953fd52354a74b9f6b3d70d0c9650c4ec2a",
+			"revisionTime": "2015-07-08T23:28:44Z"
+		},
+		{
+			"checksumSHA1": "Daojj6D4ZxEWjgQ/bPEfXpzDZRc=",
+			"path": "github.com/go-kit/kit/log",
+			"revision": "00e2b89d8ad42af22b20fdb9adfbbfa0d5f34660",
+			"revisionTime": "2016-09-08T13:45:07Z"
+		},
+		{
+			"checksumSHA1": "+xn4YEmUV6SSxFKMro2JKs63F0A=",
+			"path": "github.com/go-logfmt/logfmt",
+			"revision": "d4327190ff838312623b09bfeb50d7c93c8d9c1d",
+			"revisionTime": "2016-06-01T13:08:01Z"
+		},
+		{
+			"checksumSHA1": "2sj/DbXoXdnPAfjAEyhS0Jj5QL0=",
+			"path": "github.com/go-stack/stack",
+			"revision": "100eb0c0a9c5b306ca2fb4f165df21d80ada4b82",
+			"revisionTime": "2016-05-14T03:44:11Z"
+		},
+		{
+			"checksumSHA1": "P33uiMB358OIWxN/8dBHdvBnqdA=",
+			"path": "github.com/jessevdk/go-flags",
+			"revision": "1acbbaff2f347c412a0c7884873bd72cc9c1f5b4",
+			"revisionTime": "2015-08-16T10:05:21Z"
+		},
+		{
+			"checksumSHA1": "czIz10x6hWF0kAJKNMKbB31UvxI=",
+			"path": "github.com/streadway/amqp",
+			"revision": "b4f3ceab0337f013208d31348b578d83c0064744",
+			"revisionTime": "2015-10-01T15:05:49Z"
+		}
+	],
+	"rootPath": "github.com/skbkontur/cspreport"
+}
