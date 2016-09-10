@@ -20,16 +20,16 @@ clean:
 	rm -rf cmd/cspreport/build
 
 rpm: clean build
-	mkdir -p build/root/usr/local/bin
-	mv cmd/cspreport/build/cspreport cmd/cspreport/build/root/usr/local/bin/
+	mkdir -p cmd/cspreport/build/root/usr/local/bin
+	cp cmd/cspreport/build/cspreport cmd/cspreport/build/root/usr/local/bin/
 	fpm -t rpm \
-		-s "dir" \
+		-s dir \
 		--description "CSP/HPKP Report Collector" \
 		-C cmd/cspreport/build/root \
 		--vendor $(VENDOR) \
 		--url $(URL) \
 		--license $(LICENSE) \
-		--name "cspreport" \
+		--name cspreport \
 		--version "$(VERSION)" \
 		--iteration "$(RELEASE)" \
 		-p build
