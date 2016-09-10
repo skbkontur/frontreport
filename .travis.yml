@@ -5,12 +5,10 @@ go:
 
 before_install:
 - make prepare
+- gem install fpm
 
 script:
 - make rpm
-
-before_deploy:
-- gem install fpm
 
 deploy:
   provider: releases
