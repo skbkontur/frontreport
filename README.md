@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/skbkontur/cspreport)](https://goreportcard.com/report/github.com/skbkontur/cspreport)
+[![Build Status](https://travis-ci.org/skbkontur/cspreport.svg?branch=master)](https://travis-ci.org/skbkontur/cspreport) [![Go Report Card](https://goreportcard.com/badge/github.com/skbkontur/cspreport)](https://goreportcard.com/report/github.com/skbkontur/cspreport)
 
 - CSP stands for Content Security Policy: http://en.wikipedia.org/wiki/Content_Security_Policy
 - HPKP stands for HTTP Public Key Pinning: https://en.wikipedia.org/wiki/HTTP_Public_Key_Pinning
