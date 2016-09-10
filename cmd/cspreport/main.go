@@ -12,9 +12,9 @@ import (
 	"github.com/skbkontur/cspreport/http"
 )
 
-func main() {
-	var version = "undefined"
+var version = "undefined"
 
+func main() {
 	var opts struct {
 		Port           string `short:"p" long:"port" default:"8888" description:"port to listen" env:"CSPREPORT_PORT"`
 		AMQPConnection string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"CSPREPORT_AMQP"`
