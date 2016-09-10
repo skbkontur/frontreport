@@ -34,7 +34,7 @@ func (h *Handler) handleCSPReport(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	bodyParsed := &cspreport.CSPReport{}
 	if err := dec.Decode(bodyParsed); err != nil {
-		h.Logger.Log("msg", "malformed JSON body", "error", err)
+		h.Logger.Log("msg", "malformed JSON body", "report_type", "CSP", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -53,7 +53,7 @@ func (h *Handler) handlePKPReport(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	bodyParsed := &cspreport.PKPReport{}
 	if err := dec.Decode(bodyParsed); err != nil {
-		h.Logger.Log("msg", "malformed JSON body", "error", err)
+		h.Logger.Log("msg", "malformed JSON body", "report_type", "PKP", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

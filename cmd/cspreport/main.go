@@ -29,6 +29,7 @@ func main() {
 	}
 
 	logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.NewContext(logger).With("ts", log.DefaultTimestampUTC)
 
 	storage := &amqp.ReportStorage{
 		MaxBatchSize:         10,
