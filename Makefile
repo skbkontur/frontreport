@@ -32,4 +32,4 @@ rpm: clean build
 		--name cspreport \
 		--version "$(VERSION)" \
 		--iteration "$(RELEASE)" \
-		-p build
+		-p cmd/cspreport/build

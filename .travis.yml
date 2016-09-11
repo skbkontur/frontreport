@@ -5,8 +5,8 @@ go:
 - 1.7
 
 before_install:
-- sudo apt-get update -qq
-- sudo apt-get install rpm
+- sudo apt-get -qq update
+- sudo apt-get install -y rpm
 - gem install fpm
 - make prepare
 
