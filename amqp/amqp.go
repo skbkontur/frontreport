@@ -2,12 +2,11 @@ package amqp
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/assembla/cony"
 	"github.com/facebookgo/muster"
 	"github.com/skbkontur/cspreport"
 	"github.com/streadway/amqp"
@@ -21,18 +20,26 @@ type ReportStorage struct {
 	Exchange             string
 	RoutingKey           string
 	AMQPConnectionString string
-	CACert               []byte
 	Logger               cspreport.Logger
-	connection           *amqp.Connection
+	publisher            *cony.Publisher
 	musterCSP            muster.Client
 	musterPKP            muster.Client
 }
 
 // Start initializes muster batching
 func (rs *ReportStorage) Start() error {
-	if err := rs.dialAMQP(); err != nil {
-		return err
-	}
+	client := cony.NewClient(cony.URL(rs.AMQPConnectionString), cony.Backoff(cony.DefaultBackoff))
+	rs.publisher = cony.NewPublisher(rs.Exchange, rs.RoutingKey)
+	client.Publish(rs.publisher)
+
+	go func() {
+		for client.Loop() {
+			select {
+			case err := <-client.Errors():
+				rs.Logger.Log("msg", "error communicating via AMQP", "error", err)
+			}
+		}
+	}()
 
 	rs.musterCSP.MaxBatchSize = rs.MaxBatchSize
 	rs.musterPKP.MaxBatchSize = rs.MaxBatchSize
@@ -54,14 +61,10 @@ func (rs *ReportStorage) Start() error {
 func (rs *ReportStorage) Stop() error {
 	errCSP := rs.musterCSP.Stop()
 	errPKP := rs.musterPKP.Stop()
-	errCloseConnection := rs.connection.Close()
 	if errCSP != nil {
 		return errCSP
 	}
-	if errPKP != nil {
-		return errPKP
-	}
-	return errCloseConnection
+	return errPKP
 }
 
 // AddCSPReport adds a report to next batch
@@ -74,29 +77,8 @@ func (rs *ReportStorage) AddPKPReport(report cspreport.PKPReport) {
 	rs.musterPKP.Work <- report
 }
 
-func (rs *ReportStorage) dialAMQP() error {
-	var err error
-	if len(rs.CACert) > 0 {
-		cfg := new(tls.Config)
-		cfg.RootCAs = x509.NewCertPool()
-		cfg.RootCAs.AppendCertsFromPEM(rs.CACert)
-		rs.connection, err = amqp.DialTLS(rs.AMQPConnectionString, cfg)
-	} else {
-		rs.connection, err = amqp.Dial(rs.AMQPConnectionString)
-	}
-	return err
-}
-
 func (rs *ReportStorage) sendBatchToAMQP(batch []byte) error {
-	channel, err := rs.connection.Channel()
-	if err != nil {
-		return err
-	}
-	return channel.Publish(
-		rs.Exchange,
-		rs.RoutingKey,
-		false,
-		false,
+	return rs.publisher.Publish(
 		amqp.Publishing{
 			DeliveryMode: amqp.Transient,
 			Timestamp:    time.Now(),
@@ -123,12 +105,11 @@ func (b *batchCSP) Fire(notifier muster.Notifier) {
 		}
 		batch.WriteString("\n")
 	}
-	if len(b.Items) > 0 {
-		b.Storage.Logger.Log("msg", "sent non-empty batch", "report_type", "CSP", "count", len(b.Items))
-	}
+	b.Storage.Logger.Log("msg", "sending batch", "report_type", "CSP", "count", len(b.Items))
 	if err := b.Storage.sendBatchToAMQP(batch.Bytes()); err != nil {
 		b.Storage.Logger.Log("msg", "failed to send batch", "report_type", "CSP", "error", err)
 	}
+	b.Storage.Logger.Log("msg", "batch successfully sent", "report_type", "CSP", "count", len(b.Items))
 }
 
 type batchPKP struct {
@@ -150,8 +131,9 @@ func (b *batchPKP) Fire(notifier muster.Notifier) {
 		}
 		batch.WriteString("\n")
 	}
-	b.Storage.Logger.Log("msg", "sent non-empty batch", "report_type", "PKP", "count", len(b.Items))
+	b.Storage.Logger.Log("msg", "sending batch", "report_type", "PKP", "count", len(b.Items))
 	if err := b.Storage.sendBatchToAMQP(batch.Bytes()); err != nil {
 		b.Storage.Logger.Log("msg", "failed to send batch", "report_type", "PKP", "error", err)
 	}
+	b.Storage.Logger.Log("msg", "batch successfully sent", "report_type", "PKP", "count", len(b.Items))
 }
