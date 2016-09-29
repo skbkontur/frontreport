@@ -10,6 +10,7 @@ import (
 	"github.com/facebookgo/muster"
 	"github.com/skbkontur/cspreport"
 	"github.com/streadway/amqp"
+	"gopkg.in/tomb.v2"
 )
 
 // ReportStorage is an AMQP implementation of cspreport.ReportStorage interface
@@ -24,22 +25,27 @@ type ReportStorage struct {
 	publisher            *cony.Publisher
 	musterCSP            muster.Client
 	musterPKP            muster.Client
+	tomb                 tomb.Tomb
 }
 
-// Start initializes muster batching
+// Start initializes AMQP connections and muster batching
 func (rs *ReportStorage) Start() error {
 	client := cony.NewClient(cony.URL(rs.AMQPConnectionString), cony.Backoff(cony.DefaultBackoff))
 	rs.publisher = cony.NewPublisher(rs.Exchange, rs.RoutingKey)
 	client.Publish(rs.publisher)
 
-	go func() {
+	rs.tomb.Go(func() error {
 		for client.Loop() {
 			select {
+			case <-rs.tomb.Dying():
+				client.Close()
+				return nil
 			case err := <-client.Errors():
 				rs.Logger.Log("msg", "error communicating via AMQP", "error", err)
 			}
 		}
-	}()
+		return nil
+	})
 
 	rs.musterCSP.MaxBatchSize = rs.MaxBatchSize
 	rs.musterPKP.MaxBatchSize = rs.MaxBatchSize
@@ -61,10 +67,17 @@ func (rs *ReportStorage) Start() error {
 func (rs *ReportStorage) Stop() error {
 	errCSP := rs.musterCSP.Stop()
 	errPKP := rs.musterPKP.Stop()
+
+	rs.tomb.Kill(nil)
+	errTomb := rs.tomb.Wait()
+
 	if errCSP != nil {
 		return errCSP
 	}
-	return errPKP
+	if errPKP != nil {
+		return errPKP
+	}
+	return errTomb
 }
 
 // AddCSPReport adds a report to next batch

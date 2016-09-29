@@ -55,6 +55,18 @@
 			"path": "github.com/streadway/amqp",
 			"revision": "b4f3ceab0337f013208d31348b578d83c0064744",
 			"revisionTime": "2015-10-01T15:05:49Z"
+		},
+		{
+			"checksumSHA1": "XHelZPsZOVFutaCm/UJMITvfGSM=",
+			"path": "github.com/tylerb/graceful",
+			"revision": "50a48b6e73fcc75b45e22c05b79629a67c79e938",
+			"revisionTime": "2016-08-29T01:00:30Z"
+		},
+		{
+			"checksumSHA1": "WiyCOMvfzRdymImAJ3ME6aoYUdM=",
+			"path": "gopkg.in/tomb.v2",
+			"revision": "14b3d72120e8d10ea6e6b7f87f7175734b1faab8",
+			"revisionTime": "2014-06-26T14:46:23Z"
 		}
 	],
 	"rootPath": "github.com/skbkontur/cspreport"

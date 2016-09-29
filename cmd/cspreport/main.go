@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -39,11 +41,12 @@ func main() {
 		Logger:               log.NewContext(logger).With("component", "amqp"),
 	}
 
+	logger.Log("msg", "starting AMQP storage")
 	if err := storage.Start(); err != nil {
 		logger.Log("msg", "error starting AMQP storage", "error", err)
 		os.Exit(1)
 	}
-	defer storage.Stop()
+	logger.Log("msg", "started AMQP storage")
 
 	handler := &http.Handler{
 		BatchReportStorage: storage,
@@ -51,8 +54,26 @@ func main() {
 		Logger:             log.NewContext(logger).With("component", "http"),
 	}
 
+	logger.Log("msg", "starting HTTP handler")
 	if err := handler.Start(); err != nil {
 		logger.Log("msg", "error starting HTTP handler", "error", err)
 		os.Exit(1)
 	}
+	logger.Log("msg", "started HTTP handler")
+
+	signalChannel := make(chan os.Signal)
+	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
+	logger.Log("msg", "received signal", "signal", <-signalChannel)
+
+	logger.Log("msg", "stopping HTTP handler")
+	if err := handler.Stop(); err != nil {
+		logger.Log("msg", "error stopping HTTP handler", "error", err)
+	}
+	logger.Log("msg", "stopped HTTP handler")
+
+	logger.Log("msg", "stopping AMQP storage")
+	if err := storage.Stop(); err != nil {
+		logger.Log("msg", "error stopping AMQP storage", "error", err)
+	}
+	logger.Log("msg", "stopped AMQP storage")
 }
