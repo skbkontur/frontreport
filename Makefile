@@ -4,10 +4,11 @@ VENDOR := "SKB Kontur"
 URL := "https://github.com/skbkontur/cspreport"
 LICENSE := "BSD"
 
-default: build
+default: clean prepare test build rpm
 
 build:
-	cd cmd/cspreport && go build -ldflags "-X main.version=$(VERSION)-$(RELEASE)" -o build/cspreport
+	mkdir build
+	cd cmd/cspreport && go build -ldflags "-X main.version=$(VERSION)-$(RELEASE)" -o ../../build/cspreport
 
 prepare:
 	go get github.com/kardianos/govendor
@@ -17,19 +18,19 @@ test: prepare
 	echo "No tests"
 
 clean:
-	rm -rf cmd/cspreport/build
+	rm -rf build
 
 rpm: clean build
-	mkdir -p cmd/cspreport/build/root/usr/local/bin
-	cp cmd/cspreport/build/cspreport cmd/cspreport/build/root/usr/local/bin/
+	mkdir -p build/root/usr/bin
+	cp build/cspreport build/root/usr/bin/
 	fpm -t rpm \
 		-s dir \
 		--description "CSP/HPKP Report Collector" \
-		-C cmd/cspreport/build/root \
+		-C build/root \
 		--vendor $(VENDOR) \
 		--url $(URL) \
 		--license $(LICENSE) \
 		--name cspreport \
 		--version "$(VERSION)" \
 		--iteration "$(RELEASE)" \
-		-p cmd/cspreport/build
+		-p build
