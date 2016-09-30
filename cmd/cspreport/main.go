@@ -21,7 +21,9 @@ func main() {
 		AMQPConnection string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"CSPREPORT_AMQP"`
 		Version        bool   `short:"v" long:"version" description:"print version and exit"`
 	}
-	flags.Parse(&opts)
+	if _, err := flags.Parse(&opts); err != nil {
+		os.Exit(0)
+	}
 
 	if opts.Version {
 		fmt.Println("version:", version)
