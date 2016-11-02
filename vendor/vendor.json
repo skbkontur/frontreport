@@ -27,10 +27,10 @@
 			"revisionTime": "2015-07-08T23:28:44Z"
 		},
 		{
-			"checksumSHA1": "Daojj6D4ZxEWjgQ/bPEfXpzDZRc=",
+			"checksumSHA1": "7Ta13bcuAlF1esPxSPljmpsSUwc=",
 			"path": "github.com/go-kit/kit/log",
-			"revision": "00e2b89d8ad42af22b20fdb9adfbbfa0d5f34660",
-			"revisionTime": "2016-09-08T13:45:07Z"
+			"revision": "b4115569ed8e08afc1d4987c27187be3cd502eee",
+			"revisionTime": "2016-11-01T01:22:26Z"
 		},
 		{
 			"checksumSHA1": "+xn4YEmUV6SSxFKMro2JKs63F0A=",
@@ -45,16 +45,22 @@
 			"revisionTime": "2016-05-14T03:44:11Z"
 		},
 		{
-			"checksumSHA1": "P33uiMB358OIWxN/8dBHdvBnqdA=",
+			"checksumSHA1": "02eZYxwKgAygqNiDKY2yTQiXQyA=",
 			"path": "github.com/jessevdk/go-flags",
-			"revision": "1acbbaff2f347c412a0c7884873bd72cc9c1f5b4",
-			"revisionTime": "2015-08-16T10:05:21Z"
+			"revision": "0648c820cd4e564706597268ae2d2c7d9e6900c6",
+			"revisionTime": "2016-10-25T19:38:02Z"
 		},
 		{
-			"checksumSHA1": "czIz10x6hWF0kAJKNMKbB31UvxI=",
+			"checksumSHA1": "abKzFXAn0KDr5U+JON1ZgJ2lUtU=",
+			"path": "github.com/kr/logfmt",
+			"revision": "b84e30acd515aadc4b783ad4ff83aff3299bdfe0",
+			"revisionTime": "2014-02-26T03:06:59Z"
+		},
+		{
+			"checksumSHA1": "rKV8YLkXpeNG1Oix8hlYqVsEFb4=",
 			"path": "github.com/streadway/amqp",
-			"revision": "b4f3ceab0337f013208d31348b578d83c0064744",
-			"revisionTime": "2015-10-01T15:05:49Z"
+			"revision": "2e25825abdbd7752ff08b270d313b93519a0a232",
+			"revisionTime": "2016-03-11T21:55:03Z"
 		},
 		{
 			"checksumSHA1": "XHelZPsZOVFutaCm/UJMITvfGSM=",

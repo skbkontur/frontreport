@@ -28,7 +28,8 @@ func (h *Handler) Start() error {
 	mux.HandleFunc("/pkp", h.handlePKPReport)
 
 	server := &graceful.Server{
-		Timeout: 10 * time.Second,
+		Timeout:          10 * time.Second,
+		NoSignalHandling: true,
 		Server: &http.Server{
 			Addr:    fmt.Sprintf(":%s", h.Port),
 			Handler: mux,

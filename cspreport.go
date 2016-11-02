@@ -38,3 +38,9 @@ type BatchReportStorage interface {
 type Logger interface {
 	Log(...interface{}) error
 }
+
+// Service is started and stopped in main function, which assebmles services into a working application
+type Service interface {
+	Start() error
+	Stop() error
+}
