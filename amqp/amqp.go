@@ -3,6 +3,7 @@ package amqp
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -31,7 +32,10 @@ type ReportStorage struct {
 
 // Start initializes AMQP connections and muster batching
 func (rs *ReportStorage) Start() error {
-	client := cony.NewClient(cony.URL(rs.AMQPConnectionString), cony.Backoff(cony.DefaultBackoff))
+	client := cony.NewClient(
+		cony.URL(rs.AMQPConnectionString),
+		cony.Backoff(cony.DefaultBackoff),
+	)
 	rs.publisher = cony.NewPublisher(rs.Exchange, rs.RoutingKey)
 	client.Publish(rs.publisher)
 
@@ -59,6 +63,18 @@ func (rs *ReportStorage) Start() error {
 
 // Stop flushes and stops muster batching
 func (rs *ReportStorage) Stop() error {
+	rs.tomb.Go(func() error {
+		timer := time.NewTimer(10 * time.Second)
+		select {
+		case <-rs.tomb.Dying():
+			return nil
+		case <-timer.C:
+			rs.Logger.Log("msg", "publishing timed out, cancelling batch due to shutdown")
+			rs.publisher.Cancel()
+			return errors.New("at least one publishing timed out, had to cancel")
+		}
+	})
+
 	errMuster := rs.muster.Stop()
 
 	rs.tomb.Kill(nil)
