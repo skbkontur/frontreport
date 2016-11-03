@@ -55,7 +55,7 @@ func main() {
 		MaxConcurrentBatches: 10,
 		BatchTimeout:         time.Second,
 		PendingWorkCapacity:  100,
-		Exchange:             "csp",
+		ExchangeName:         "csp",
 		RoutingKey:           "csp",
 		AMQPConnectionString: opts.AMQPConnection,
 		Logger:               log.NewContext(logger).With("component", "amqp"),

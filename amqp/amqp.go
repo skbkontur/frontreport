@@ -21,7 +21,7 @@ type ReportStorage struct {
 	MaxConcurrentBatches uint
 	BatchTimeout         time.Duration
 	PendingWorkCapacity  uint
-	Exchange             string
+	ExchangeName         string
 	RoutingKey           string
 	AMQPConnectionString string
 	Logger               cspreport.Logger
@@ -36,7 +36,17 @@ func (rs *ReportStorage) Start() error {
 		cony.URL(rs.AMQPConnectionString),
 		cony.Backoff(cony.DefaultBackoff),
 	)
-	rs.publisher = cony.NewPublisher(rs.Exchange, rs.RoutingKey)
+
+	exchange := cony.Exchange{
+		Name:    rs.ExchangeName,
+		Kind:    "direct",
+		Durable: true,
+	}
+	client.Declare([]cony.Declaration{
+		cony.DeclareExchange(exchange),
+	})
+
+	rs.publisher = cony.NewPublisher(rs.ExchangeName, rs.RoutingKey)
 	client.Publish(rs.publisher)
 
 	rs.tomb.Go(func() error {
