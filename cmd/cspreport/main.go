@@ -48,6 +48,8 @@ func main() {
 	}
 	logger = log.NewContext(logger).With("ts", log.DefaultTimestampUTC)
 
+	logger.Log("msg", "starting program", "pid", os.Getpid())
+
 	storage := &amqp.ReportStorage{
 		MaxBatchSize:         10,
 		MaxConcurrentBatches: 10,
