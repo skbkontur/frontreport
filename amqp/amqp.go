@@ -79,7 +79,6 @@ func (rs *ReportStorage) Stop() error {
 		case <-rs.tomb.Dying():
 			return nil
 		case <-timer.C:
-			rs.Logger.Log("msg", "publishing timed out, cancelling batch due to shutdown")
 			rs.publisher.Cancel()
 			return errors.New("at least one publishing timed out, had to cancel")
 		}
@@ -138,6 +137,6 @@ func (b *batch) Fire(notifier muster.Notifier) {
 			Body:         b.Items.Bytes(),
 		})
 	if err != nil {
-		b.ReportStorage.Logger.Log("msg", "failed to fire batch", "error", err)
+		b.ReportStorage.Logger.Log("msg", "failed to fire batch", "size", b.Items.Len(), "error", err)
 	}
 }
