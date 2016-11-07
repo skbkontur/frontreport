@@ -12,10 +12,10 @@ import (
 	"github.com/streadway/amqp"
 	"gopkg.in/tomb.v2"
 
-	"github.com/skbkontur/cspreport"
+	"github.com/skbkontur/frontreport"
 )
 
-// ReportStorage is an AMQP implementation of cspreport.ReportStorage interface
+// ReportStorage is an AMQP implementation of frontreport.ReportStorage interface
 type ReportStorage struct {
 	MaxBatchSize         uint
 	MaxConcurrentBatches uint
@@ -24,7 +24,7 @@ type ReportStorage struct {
 	ExchangeName         string
 	RoutingKey           string
 	AMQPConnectionString string
-	Logger               cspreport.Logger
+	Logger               frontreport.Logger
 	publisher            *cony.Publisher
 	muster               muster.Client
 	tomb                 tomb.Tomb
@@ -95,24 +95,16 @@ func (rs *ReportStorage) Stop() error {
 	return errTomb
 }
 
-// AddCSPReport adds a report to next batch
-func (rs *ReportStorage) AddCSPReport(report cspreport.CSPReport) {
-	decoratedReport := bytes.NewBufferString(fmt.Sprintf("{\"index\": {\"_index\": \"csp-report-%s\", \"_type\": \"csp-report\"}}\n", time.Now().UTC().Format("2006.01.02")))
+// AddReport adds a report of any type to next batch
+func (rs *ReportStorage) AddReport(report frontreport.Reportable) {
+	decoratedReport := bytes.NewBufferString(
+		fmt.Sprintf("{\"index\": {\"_index\": \"%s-report-%s\", \"_type\": \"%s-report\"}}\n",
+			report.GetType(),
+			time.Now().UTC().Format("2006.01.02"),
+			report.GetType()))
 	encoder := json.NewEncoder(decoratedReport)
 	if err := encoder.Encode(&report); err != nil {
-		rs.Logger.Log("msg", "failed to encode", "report_type", "CSP", "error", err)
-	} else {
-		decoratedReport.WriteString("\n")
-		rs.muster.Work <- decoratedReport.Bytes()
-	}
-}
-
-// AddPKPReport adds a report to next batch
-func (rs *ReportStorage) AddPKPReport(report cspreport.PKPReport) {
-	decoratedReport := bytes.NewBufferString(fmt.Sprintf("{\"index\": {\"_index\": \"pkp-report-%s\", \"_type\": \"pkp-report\"}}\n", time.Now().UTC().Format("2006.01.02")))
-	encoder := json.NewEncoder(decoratedReport)
-	if err := encoder.Encode(&report); err != nil {
-		rs.Logger.Log("msg", "failed to encode", "report_type", "PKP", "error", err)
+		rs.Logger.Log("msg", "failed to encode", "report_type", report.GetType(), "error", err)
 	} else {
 		decoratedReport.WriteString("\n")
 		rs.muster.Work <- decoratedReport.Bytes()

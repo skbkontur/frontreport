@@ -3,36 +3,33 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"time"
 
-	"github.com/skbkontur/cspreport"
 	"github.com/tylerb/graceful"
 	"gopkg.in/tomb.v2"
+
+	"github.com/skbkontur/frontreport"
 )
 
 // Handler processes incoming reports
 type Handler struct {
-	BatchReportStorage cspreport.BatchReportStorage
+	BatchReportStorage frontreport.BatchReportStorage
 	Port               string
-	Logger             cspreport.Logger
+	Logger             frontreport.Logger
 	tomb               tomb.Tomb
 }
 
 // Start initializes HTTP request handling
 func (h *Handler) Start() error {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", h.handleCSPReport)
-	mux.HandleFunc("/csp", h.handleCSPReport)
-	mux.HandleFunc("/pkp", h.handlePKPReport)
-
 	server := &graceful.Server{
 		Timeout:          10 * time.Second,
 		NoSignalHandling: true,
 		Server: &http.Server{
 			Addr:    fmt.Sprintf(":%s", h.Port),
-			Handler: mux,
+			Handler: http.HandlerFunc(h.handleReport),
 		},
 	}
 
@@ -65,39 +62,46 @@ func (h *Handler) Stop() error {
 	return h.tomb.Wait()
 }
 
-func (h *Handler) handleCSPReport(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	dec := json.NewDecoder(r.Body)
-	bodyParsed := &cspreport.CSPReport{}
-	if err := dec.Decode(bodyParsed); err != nil {
-		h.Logger.Log("msg", "malformed JSON body", "report_type", "CSP", "error", err)
-		w.WriteHeader(http.StatusBadRequest)
+	switch r.URL.Path {
+	case "/csp":
+		report := &frontreport.CSPReport{}
+		if err := h.processReport(r.Body, report); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	case "/hpkp":
+		report := &frontreport.PKPReport{}
+		if err := h.processReport(r.Body, report); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	case "/stacktracejs":
+		report := &frontreport.StacktraceJSReport{}
+		if err := h.processReport(r.Body, report); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	default:
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	bodyParsed.Body.Timestamp = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
-	h.BatchReportStorage.AddCSPReport(*bodyParsed)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) handlePKPReport(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
+func (h *Handler) processReport(body io.Reader, report frontreport.Reportable) error {
+	dec := json.NewDecoder(body)
+	if err := dec.Decode(report); err != nil {
+		h.Logger.Log("msg", "cannot process JSON body", "report_type", report.GetType(), "error", err)
+		return err
 	}
-
-	dec := json.NewDecoder(r.Body)
-	bodyParsed := &cspreport.PKPReport{}
-	if err := dec.Decode(bodyParsed); err != nil {
-		h.Logger.Log("msg", "malformed JSON body", "report_type", "PKP", "error", err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	h.BatchReportStorage.AddPKPReport(*bodyParsed)
-	w.WriteHeader(http.StatusNoContent)
+	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
+	h.BatchReportStorage.AddReport(report)
+	return nil
 }

@@ -11,9 +11,9 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/jessevdk/go-flags"
 
-	"github.com/skbkontur/cspreport"
-	"github.com/skbkontur/cspreport/amqp"
-	"github.com/skbkontur/cspreport/http"
+	"github.com/skbkontur/frontreport"
+	"github.com/skbkontur/frontreport/amqp"
+	"github.com/skbkontur/frontreport/http"
 )
 
 var logger log.Logger
@@ -21,9 +21,9 @@ var version = "undefined"
 
 func main() {
 	var opts struct {
-		Port           string `short:"p" long:"port" default:"8888" description:"port to listen" env:"CSPREPORT_PORT"`
-		AMQPConnection string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"CSPREPORT_AMQP"`
-		Logfile        string `short:"l" long:"logfile" description:"log file name (writes to stdout if not specified)" env:"CSPREPORT_LOGFILE"`
+		Port           string `short:"p" long:"port" default:"8888" description:"port to listen" env:"FRONTREPORT_PORT"`
+		AMQPConnection string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
+		Logfile        string `short:"l" long:"logfile" description:"log file name (writes to stdout if not specified)" env:"FRONTREPORT_LOGFILE"`
 		Version        bool   `short:"v" long:"version" description:"print version and exit"`
 	}
 	if _, err := flags.Parse(&opts); err != nil {
@@ -78,7 +78,7 @@ func main() {
 	mustStop(storage)
 }
 
-func mustStart(service cspreport.Service) {
+func mustStart(service frontreport.Service) {
 	name := reflect.TypeOf(service)
 
 	logger.Log("msg", "starting service", "name", name)
@@ -89,7 +89,7 @@ func mustStart(service cspreport.Service) {
 	logger.Log("msg", "started service", "name", name)
 }
 
-func mustStop(service cspreport.Service) {
+func mustStop(service frontreport.Service) {
 	name := reflect.TypeOf(service)
 
 	logger.Log("msg", "stopping service", "name", name)

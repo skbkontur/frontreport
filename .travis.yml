@@ -19,9 +19,9 @@ deploy:
     secure: Zi4SW0M3xnkC8+P5j9c/I0rx0RIQrDVs3fEbapjYAxpJu66Htd7q1TU2n7kczkMwk7UMAhFJZtsqtZK85hQM5iqib7O8EM4kgd7VrkfSAtz8LnR9RLUEfVcqMSTCIXYutmz5Hs/7o8Tu9l2FswOHz9KX1AB0YvNd0L6eELWK5lA=
   file_glob: true
   file:
-  - build/cspreport
-  - build/cspreport*.rpm
+  - build/frontreport
+  - build/frontreport*.rpm
   skip_cleanup: true
   on:
-    repo: skbkontur/cspreport
+    repo: skbkontur/frontreport
     tags: true
