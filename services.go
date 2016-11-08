@@ -2,8 +2,6 @@ package frontreport
 
 // BatchReportStorage is a way to store incoming reports
 type BatchReportStorage interface {
-	Start() error
-	Stop() error
 	AddReport(Reportable)
 }
 
