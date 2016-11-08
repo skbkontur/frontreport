@@ -25,6 +25,7 @@ type ReportStorage struct {
 	RoutingKey           string
 	AMQPConnectionString string
 	Logger               frontreport.Logger
+	MetricStorage        frontreport.MetricStorage
 	publisher            *cony.Publisher
 	muster               muster.Client
 	tomb                 tomb.Tomb
@@ -32,6 +33,10 @@ type ReportStorage struct {
 
 // Start initializes AMQP connections and muster batching
 func (rs *ReportStorage) Start() error {
+	rs.MetricStorage.RegisterHistogram("amqp.batch_size")
+	rs.MetricStorage.RegisterCounter("amqp.batch_fire.errors")
+	rs.MetricStorage.RegisterCounter("amqp.report_encoding.errors")
+
 	client := cony.NewClient(
 		cony.URL(rs.AMQPConnectionString),
 		cony.Backoff(cony.DefaultBackoff),
@@ -105,6 +110,7 @@ func (rs *ReportStorage) AddReport(report frontreport.Reportable) {
 	encoder := json.NewEncoder(decoratedReport)
 	if err := encoder.Encode(&report); err != nil {
 		rs.Logger.Log("msg", "failed to encode", "report_type", report.GetType(), "error", err)
+		rs.MetricStorage.IncCounter("amqp.report_encoding.errors", 1)
 	} else {
 		decoratedReport.WriteString("\n")
 		rs.muster.Work <- decoratedReport.Bytes()
@@ -130,5 +136,7 @@ func (b *batch) Fire(notifier muster.Notifier) {
 		})
 	if err != nil {
 		b.ReportStorage.Logger.Log("msg", "failed to fire batch", "size", b.Items.Len(), "error", err)
+		b.ReportStorage.MetricStorage.IncCounter("amqp.batch_fire.errors", 1)
 	}
+	b.ReportStorage.MetricStorage.UpdateHistogram("amqp.batch_size", b.Items.Len())
 }

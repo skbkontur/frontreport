@@ -14,6 +14,7 @@ import (
 	"github.com/skbkontur/frontreport"
 	"github.com/skbkontur/frontreport/amqp"
 	"github.com/skbkontur/frontreport/http"
+	"github.com/skbkontur/frontreport/metrics"
 )
 
 var logger log.Logger
@@ -21,10 +22,12 @@ var version = "undefined"
 
 func main() {
 	var opts struct {
-		Port           string `short:"p" long:"port" default:"8888" description:"port to listen" env:"FRONTREPORT_PORT"`
-		AMQPConnection string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
-		Logfile        string `short:"l" long:"logfile" description:"log file name (writes to stdout if not specified)" env:"FRONTREPORT_LOGFILE"`
-		Version        bool   `short:"v" long:"version" description:"print version and exit"`
+		Port               string `short:"p" long:"port" default:"8888" description:"port to listen" env:"FRONTREPORT_PORT"`
+		AMQPConnection     string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
+		Logfile            string `short:"l" long:"logfile" description:"log file name (writes to stdout if not specified)" env:"FRONTREPORT_LOGFILE"`
+		GraphiteConnection string `short:"g" long:"graphite" description:"Graphite connection string for internal metrics" env:"FRONTREPORT_GRAPHITE"`
+		GraphitePrefix     string `short:"r" long:"graphite-prefix" description:"prefix for Graphite metrics" env:"FRONTREPORT_GRAPHITE_PREFIX"`
+		Version            bool   `short:"v" long:"version" description:"print version and exit"`
 	}
 	if _, err := flags.Parse(&opts); err != nil {
 		os.Exit(0)
@@ -50,6 +53,12 @@ func main() {
 
 	logger.Log("msg", "starting program", "pid", os.Getpid())
 
+	metrics := &metrics.MetricStorage{
+		GraphiteConnectionString: opts.GraphiteConnection,
+		GraphitePrefix:           opts.GraphitePrefix,
+		Logger:                   log.NewContext(logger).With("component", "metrics"),
+	}
+
 	storage := &amqp.ReportStorage{
 		MaxBatchSize:         10,
 		MaxConcurrentBatches: 10,
@@ -59,14 +68,17 @@ func main() {
 		RoutingKey:           "csp",
 		AMQPConnectionString: opts.AMQPConnection,
 		Logger:               log.NewContext(logger).With("component", "amqp"),
+		MetricStorage:        metrics,
 	}
 
 	handler := &http.Handler{
 		BatchReportStorage: storage,
 		Port:               opts.Port,
 		Logger:             log.NewContext(logger).With("component", "http"),
+		MetricStorage:      metrics,
 	}
 
+	mustStart(metrics)
 	mustStart(storage)
 	mustStart(handler)
 
@@ -76,6 +88,7 @@ func main() {
 
 	mustStop(handler)
 	mustStop(storage)
+	mustStop(metrics)
 }
 
 func mustStart(service frontreport.Service) {

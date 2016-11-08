@@ -19,11 +19,19 @@ type Handler struct {
 	BatchReportStorage frontreport.BatchReportStorage
 	Port               string
 	Logger             frontreport.Logger
+	MetricStorage      frontreport.MetricStorage
 	tomb               tomb.Tomb
 }
 
 // Start initializes HTTP request handling
 func (h *Handler) Start() error {
+	h.MetricStorage.RegisterCounter("http.report_decoding.csp.total")
+	h.MetricStorage.RegisterCounter("http.report_decoding.csp.errors")
+	h.MetricStorage.RegisterCounter("http.report_decoding.pkp.total")
+	h.MetricStorage.RegisterCounter("http.report_decoding.pkp.errors")
+	h.MetricStorage.RegisterCounter("http.report_decoding.stacktracejs.total")
+	h.MetricStorage.RegisterCounter("http.report_decoding.stacktracejs.errors")
+
 	server := &graceful.Server{
 		Timeout:          10 * time.Second,
 		NoSignalHandling: true,
@@ -96,9 +104,12 @@ func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) processReport(body io.Reader, report frontreport.Reportable) error {
+	h.MetricStorage.IncCounter(fmt.Sprintf("http.report_decoding.%s.total", report.GetType()), 1)
+
 	dec := json.NewDecoder(body)
 	if err := dec.Decode(report); err != nil {
 		h.Logger.Log("msg", "cannot process JSON body", "report_type", report.GetType(), "error", err)
+		h.MetricStorage.IncCounter(fmt.Sprintf("http.report_decoding.%s.errors", report.GetType()), 1)
 		return err
 	}
 	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
