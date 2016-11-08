@@ -87,7 +87,7 @@ func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-	case "/hpkp":
+	case "/pkp":
 		report := &frontreport.PKPReport{}
 		if err := h.processReport(r.Body, report); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
