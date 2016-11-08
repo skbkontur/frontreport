@@ -21,16 +21,20 @@ type Handler struct {
 	Logger             frontreport.Logger
 	MetricStorage      frontreport.MetricStorage
 	tomb               tomb.Tomb
+	metrics            struct {
+		total  map[string]frontreport.MetricCounter
+		errors map[string]frontreport.MetricCounter
+	}
 }
 
 // Start initializes HTTP request handling
 func (h *Handler) Start() error {
-	h.MetricStorage.RegisterCounter("http.report_decoding.csp.total")
-	h.MetricStorage.RegisterCounter("http.report_decoding.csp.errors")
-	h.MetricStorage.RegisterCounter("http.report_decoding.pkp.total")
-	h.MetricStorage.RegisterCounter("http.report_decoding.pkp.errors")
-	h.MetricStorage.RegisterCounter("http.report_decoding.stacktracejs.total")
-	h.MetricStorage.RegisterCounter("http.report_decoding.stacktracejs.errors")
+	h.metrics.total = make(map[string]frontreport.MetricCounter)
+	h.metrics.errors = make(map[string]frontreport.MetricCounter)
+	for _, reportType := range []string{"csp", "pkp", "stacktracejs"} {
+		h.metrics.total[reportType] = h.MetricStorage.RegisterCounter(fmt.Sprintf("http.report_decoding.%s.total", reportType))
+		h.metrics.errors[reportType] = h.MetricStorage.RegisterCounter(fmt.Sprintf("http.report_decoding.%s.errors", reportType))
+	}
 
 	server := &graceful.Server{
 		Timeout:          10 * time.Second,
@@ -104,12 +108,12 @@ func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) processReport(body io.Reader, report frontreport.Reportable) error {
-	h.MetricStorage.IncCounter(fmt.Sprintf("http.report_decoding.%s.total", report.GetType()), 1)
+	h.metrics.total[report.GetType()].Inc(1)
 
 	dec := json.NewDecoder(body)
 	if err := dec.Decode(report); err != nil {
 		h.Logger.Log("msg", "cannot process JSON body", "report_type", report.GetType(), "error", err)
-		h.MetricStorage.IncCounter(fmt.Sprintf("http.report_decoding.%s.errors", report.GetType()), 1)
+		h.metrics.errors[report.GetType()].Inc(1)
 		return err
 	}
 	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))

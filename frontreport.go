@@ -71,3 +71,8 @@ type StacktraceJSReport struct {
 func (s StacktraceJSReport) GetType() string {
 	return "stacktracejs"
 }
+
+// BatchReportStorage is a way to store incoming reports
+type BatchReportStorage interface {
+	AddReport(Reportable)
+}
