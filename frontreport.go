@@ -64,7 +64,7 @@ type StacktraceJSReport struct {
 		FileName     string `json:"fileName"`
 		LineNumber   int    `json:"lineNumber"`
 		ColumnNumber int    `json:"columnNumber"`
-	} `json:"struct"`
+	} `json:"stack"`
 }
 
 // GetType returns report type
