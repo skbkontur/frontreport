@@ -59,7 +59,7 @@ func (p PKPReport) GetType() string {
 type StacktraceJSReport struct {
 	Report
 	Message string `json:"message"`
-	Stack   struct {
+	Stack   []struct {
 		FunctionName string `json:"functionName"`
 		FileName     string `json:"fileName"`
 		LineNumber   int    `json:"lineNumber"`
