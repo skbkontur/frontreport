@@ -1,7 +1,9 @@
 package metrics
 
 import (
+	"fmt"
 	"net"
+	"os"
 	"time"
 
 	"github.com/cyberdelia/go-metrics-graphite"
@@ -23,8 +25,17 @@ func (ms *MetricStorage) Start() error {
 	ms.registry = metrics.NewRegistry()
 
 	if ms.GraphiteConnectionString != "" {
-		addr, _ := net.ResolveTCPAddr("tcp", ms.GraphiteConnectionString)
-		go graphite.Graphite(ms.registry, time.Minute, ms.GraphitePrefix, addr)
+		addr, err := net.ResolveTCPAddr("tcp", ms.GraphiteConnectionString)
+		if err != nil {
+			ms.Logger.Log("msg", "error resolving Graphite connection string", "error", err)
+		} else {
+			prefix := ms.GraphitePrefix
+			hostname, err := os.Hostname()
+			if err == nil {
+				prefix = fmt.Sprintf("%s.%s", prefix, hostname)
+			}
+			go graphite.Graphite(ms.registry, time.Minute, prefix, addr)
+		}
 	}
 
 	return nil
