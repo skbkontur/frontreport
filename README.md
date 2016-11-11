@@ -1,14 +1,38 @@
 [![Build Status](https://travis-ci.org/skbkontur/frontreport.svg?branch=master)](https://travis-ci.org/skbkontur/frontreport) [![Go Report Card](https://goreportcard.com/badge/github.com/skbkontur/frontreport)](https://goreportcard.com/report/github.com/skbkontur/frontreport) [![Join the chat at https://gitter.im/frontreport/frontreport](https://badges.gitter.im/frontreport/frontreport.svg)](https://gitter.im/frontreport/frontreport?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+
 ## What is this tool for?
 
 Frontreport is useful only if you have an existing infrastructure for backend log aggregation. For example, we use ELK stack with RabbitMQ as a broker on top. So, your logging infrastructure may look like this:
 
 Backend application → Logstash → RabbitMQ → Elastic RabbitMQ River → Elastic → Kibana
 
-You may want to reuse this infrastructure to collect frontend logs from browsers of your visitors. So, you need to replace Logstash in the above scheme with something fast that can validate incoming JSON and manage high load gracefully.
+You may want to reuse this infrastructure to collect frontend logs from browsers of your visitors. So, you need to replace Logstash in the above scheme with something fast that can validate incoming JSON and manage high load by batching documents.
 
-Frontreport does all that. See code for details or ask us on [Gitter][].
+Frontreport does all that. Resulting architecture is something like:
+
+Browser → Frontreport → RabbitMQ → Elastic RabbitMQ River → Elastic → Kibana
+
+See code for details or ask us on [Gitter][].
+
+
+## Usage
+
+```
+Usage:
+  frontreport [OPTIONS]
+
+Application Options:
+  -p, --port=            port to listen (default: 8888) [$FRONTREPORT_PORT]
+  -a, --amqp=            AMQP connection string (default: amqp://guest:guest@localhost:5672/) [$FRONTREPORT_AMQP]
+  -l, --logfile=         log file name (writes to stdout if not specified) [$FRONTREPORT_LOGFILE]
+  -g, --graphite=        Graphite connection string for internal metrics [$FRONTREPORT_GRAPHITE]
+  -r, --graphite-prefix= prefix for Graphite metrics [$FRONTREPORT_GRAPHITE_PREFIX]
+  -v, --version          print version and exit
+
+Help Options:
+  -h, --help             Show this help message
+```
 
 
 ## What can you collect from browsers?
