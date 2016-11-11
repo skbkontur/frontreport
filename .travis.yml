@@ -16,7 +16,7 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: GdJRA0e4DfK0Vn9nAV6IDir9r5kbeOxYnQupv7ghXFtCMYPSIAQO/t3yiPtAWPZma7IwtLw2+leYCescusQzwEA+PAqQBa1nd+Fl/JRr8nh/5TR5ymC+qzyfB6lPyZ/JAl4U1PPi+ByMBTcTpn+VvYr6z5F/i6MEjYrd/vCSixE=
+    secure: QtQbdw7Qb/blU8lRc7IIVC1Ai48mE4h8Y/tLgHbAa155hgAbhNURTQXc3AnlKGSPd997YJpXnckWnNuuyMp+8nwVcp+mmnrQUsjB+CZOjw/+aEIc3XYXar71NGZyOrmEa9hEYwoX9ltpnqwyd1eF5kkig0WVE7n+wILirsxheZ8=
   file_glob: true
   file:
   - build/frontreport
