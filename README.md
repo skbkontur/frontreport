@@ -6,3 +6,6 @@
 To use CSP and/or HPKP in report mode, you need a tool that gathers violation reports and puts them into a decent storage.
 
 Intended architecture: Nginx -> THIS TOOL -> RabbitMQ -> Elastic RabbitMQ River -> Elastic -> Kibana.
+
+
+[![Join the chat at https://gitter.im/frontreport/Lobby](https://badges.gitter.im/frontreport/Lobby.svg)](https://gitter.im/frontreport/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
