@@ -72,6 +72,11 @@ type StacktraceJSReport struct {
 		LineNumber   int    `json:"lineNumber"`
 		ColumnNumber int    `json:"columnNumber"`
 	} `json:"stack"`
+
+	// These fields are not a part of StacktraceJS specification, but are useful for error reports
+	Browser string `json:"browser,omitempty"`
+	URL     string `json:"url,omitempty"`
+	UserID  string `json:"userId,omitempty"`
 }
 
 // GetType returns report type
