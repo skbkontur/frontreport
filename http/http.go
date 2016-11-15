@@ -83,19 +83,19 @@ func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/csp":
 		report := &frontreport.CSPReport{}
-		if err := h.processReport(r.Body, report); err != nil {
+		if err := h.processReport(r.Body, report, r.Host); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	case "/pkp":
 		report := &frontreport.PKPReport{}
-		if err := h.processReport(r.Body, report); err != nil {
+		if err := h.processReport(r.Body, report, r.Host); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	case "/stacktracejs":
 		report := &frontreport.StacktraceJSReport{}
-		if err := h.processReport(r.Body, report); err != nil {
+		if err := h.processReport(r.Body, report, r.Host); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -107,7 +107,7 @@ func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) processReport(body io.Reader, report frontreport.Reportable) error {
+func (h *Handler) processReport(body io.Reader, report frontreport.Reportable, host string) error {
 	h.metrics.total[report.GetType()].Inc(1)
 
 	dec := json.NewDecoder(body)
@@ -117,6 +117,7 @@ func (h *Handler) processReport(body io.Reader, report frontreport.Reportable) e
 		return err
 	}
 	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
+	report.SetHost(host)
 	h.BatchReportStorage.AddReport(report)
 	return nil
 }

@@ -6,16 +6,23 @@ package frontreport
 type Reportable interface {
 	GetType() string
 	SetTimestamp(string)
+	SetHost(string)
 }
 
 // Report is a generic report type (they don't have much in common)
 type Report struct {
 	Timestamp string `json:"@timestamp"`
+	Host      string `json:"frontreport-host"`
 }
 
 // SetTimestamp sets timestamp for Elastic default sorting
 func (r *Report) SetTimestamp(ts string) {
 	r.Timestamp = ts
+}
+
+// SetHost sets hostname to tell apart reports from different sites
+func (r *Report) SetHost(h string) {
+	r.Host = h
 }
 
 // CSPReport is a Content Security Policy report as per http://www.w3.org/TR/CSP/
