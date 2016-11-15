@@ -16,12 +16,12 @@ import (
 
 // Handler processes incoming reports
 type Handler struct {
-	BatchReportStorage frontreport.BatchReportStorage
-	Port               string
-	Logger             frontreport.Logger
-	MetricStorage      frontreport.MetricStorage
-	tomb               tomb.Tomb
-	metrics            struct {
+	ReportStorage frontreport.ReportStorage
+	Port          string
+	Logger        frontreport.Logger
+	MetricStorage frontreport.MetricStorage
+	tomb          tomb.Tomb
+	metrics       struct {
 		total  map[string]frontreport.MetricCounter
 		errors map[string]frontreport.MetricCounter
 	}
@@ -118,6 +118,6 @@ func (h *Handler) processReport(body io.Reader, report frontreport.Reportable, h
 	}
 	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
 	report.SetHost(host)
-	h.BatchReportStorage.AddReport(report)
+	h.ReportStorage.AddReport(report)
 	return nil
 }

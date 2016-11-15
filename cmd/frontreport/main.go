@@ -72,10 +72,10 @@ func main() {
 	}
 
 	handler := &http.Handler{
-		BatchReportStorage: storage,
-		Port:               opts.Port,
-		Logger:             log.NewContext(logger).With("component", "http"),
-		MetricStorage:      metrics,
+		ReportStorage: storage,
+		Port:          opts.Port,
+		Logger:        log.NewContext(logger).With("component", "http"),
+		MetricStorage: metrics,
 	}
 
 	mustStart(metrics)

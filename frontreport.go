@@ -84,7 +84,7 @@ func (s StacktraceJSReport) GetType() string {
 	return "stacktracejs"
 }
 
-// BatchReportStorage is a way to store incoming reports
-type BatchReportStorage interface {
+// ReportStorage is a way to store incoming reports
+type ReportStorage interface {
 	AddReport(Reportable)
 }
