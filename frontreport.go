@@ -74,9 +74,17 @@ type StacktraceJSReport struct {
 	} `json:"stack"`
 
 	// These fields are not a part of StacktraceJS specification, but are useful for error reports
-	Browser string `json:"browser,omitempty"`
-	URL     string `json:"url,omitempty"`
-	UserID  string `json:"userId,omitempty"`
+	Browser *struct {
+		Name    string `json:"name,omitempty"`
+		Version string `json:"version,omitempty"`
+	} `json:"browser,omitempty"`
+	OS *struct {
+		Name    string `json:"name,omitempty"`
+		Version string `json:"version,omitempty"`
+	} `json:"os,omitempty"`
+	URL       string `json:"url,omitempty"`
+	UserID    string `json:"userId,omitempty"`
+	StackHash string `json:"stackHash,omitempty"`
 }
 
 // GetType returns report type
