@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/tylerb/graceful"
@@ -80,20 +81,20 @@ func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.URL.Path {
-	case "/csp":
+	switch {
+	case strings.Contains(r.URL.Path, "csp"):
 		report := &frontreport.CSPReport{}
 		if err := h.processReport(r.Body, report, r.Host); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-	case "/pkp":
+	case strings.Contains(r.URL.Path, "pkp"):
 		report := &frontreport.PKPReport{}
 		if err := h.processReport(r.Body, report, r.Host); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-	case "/stacktracejs":
+	case strings.Contains(r.URL.Path, "stacktracejs"):
 		report := &frontreport.StacktraceJSReport{}
 		if err := h.processReport(r.Body, report, r.Host); err != nil {
 			w.WriteHeader(http.StatusBadRequest)

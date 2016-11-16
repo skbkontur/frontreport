@@ -37,9 +37,9 @@ Help Options:
 
 ## What can you collect from browsers?
 
-1. CSP violation reports. CSP stands for [Content Security Policy][].
-2. HPKP violation reports. HPKP stands for [HTTP Public Key Pinning][].
-3. StacktraceJS reports. [StacktraceJS][] is a JS library that collects unified stacktrace reports from any browser.
+1. CSP violation reports. CSP stands for [Content Security Policy][]. Send reports to `/csp`, `/csp/`, `/_reports/csp` or basically any URL that contains substring `csp`.
+2. HPKP violation reports. HPKP stands for [HTTP Public Key Pinning][]. URL must contain substring `pkp`.
+3. StacktraceJS reports. [StacktraceJS][] is a JS library that collects unified stacktrace reports from any browser. URL must contain substring `stacktracejs`.
 
 
 [Content Security Policy]: http://en.wikipedia.org/wiki/Content_Security_Policy
