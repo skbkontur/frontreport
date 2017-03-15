@@ -85,6 +85,7 @@ type StacktraceJSReport struct {
 	URL       string `json:"url,omitempty"`
 	UserID    string `json:"userId,omitempty"`
 	StackHash string `json:"stackHash,omitempty"`
+	ScriptURL string `json:"scriptUrl,omitempty"`
 }
 
 // GetType returns report type
