@@ -86,6 +86,12 @@ type StacktraceJSReport struct {
 	UserID    string `json:"userId,omitempty"`
 	StackHash string `json:"stackHash,omitempty"`
 	ScriptURL string `json:"scriptUrl,omitempty"`
+	
+	// These fields are experimental and can disappear in the future
+	PartyID         string `json:"partyId,omitempty"`
+	DepartmentID    string `json:"departmentId,omitempty"`
+	SalesPointID    string `json:"salesPointId,omitempty"`
+	RetailUIVersion string `json:"retailUiVersion,omitempty"`
 }
 
 // GetType returns report type
