@@ -31,4 +31,9 @@ deploy:
     on:
       branch: master
       condition: $TRAVIS_GO_VERSION = 1.7
-
+  - provider: script
+    script: "curl -sS --fail -F \"uploadfile=@${PACKAGE_NAME}\" -H 'token: ${UPLOAD_TOKEN}' \"${UPLOAD_URL}\""
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: $TRAVIS_GO_VERSION = 1.7
