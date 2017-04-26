@@ -42,7 +42,7 @@ func (h *Handler) Start() error {
 		NoSignalHandling: true,
 		Server: &http.Server{
 			Addr:    fmt.Sprintf(":%s", h.Port),
-			Handler: http.HandlerFunc(h.handleReport),
+			Handler: http.HandlerFunc(h.handleRequest),
 		},
 	}
 
@@ -75,12 +75,31 @@ func (h *Handler) Stop() error {
 	return h.tomb.Wait()
 }
 
-func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+func (h *Handler) handleRequest(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.handleAsset(w, r)
+
+	case http.MethodPost:
+		h.handleReport(w, r)
+
+	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *Handler) handleAsset(w http.ResponseWriter, r *http.Request) {
+	data, err := Asset(r.URL.Path[1:])
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		h.Logger.Log("msg", "cannot serve asset", "path", r.URL.Path, "error", err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/javascript; charset=utf-8") // only JS assets served for now
+	w.Write(data)
+}
 
+func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case strings.Contains(r.URL.Path, "csp"):
 		report := &frontreport.CSPReport{}

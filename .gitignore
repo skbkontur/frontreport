@@ -1,2 +1,3 @@
 vendor/*/
 build
+http/bindata.go
