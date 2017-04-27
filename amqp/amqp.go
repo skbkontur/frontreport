@@ -107,11 +107,15 @@ func (rs *ReportStorage) Stop() error {
 
 // AddReport adds a report of any type to next batch
 func (rs *ReportStorage) AddReport(report frontreport.Reportable) {
+	var indexName string
+	if report.GetService() != "" {
+		indexName = fmt.Sprintf("%s-report-%s-%s", report.GetType(), report.GetService(), time.Now().UTC().Format("2006.01.02"))
+	} else {
+		indexName = fmt.Sprintf("%s-report-%s", report.GetType(), time.Now().UTC().Format("2006.01.02"))
+	}
+
 	decoratedReport := bytes.NewBufferString(
-		fmt.Sprintf("{\"index\": {\"_index\": \"%s-report-%s\", \"_type\": \"%s-report\"}}\n",
-			report.GetType(),
-			time.Now().UTC().Format("2006.01.02"),
-			report.GetType()))
+		fmt.Sprintf("{\"index\": {\"_index\": \"%s\", \"_type\": \"%s-report\"}}\n", indexName, report.GetType()))
 	encoder := json.NewEncoder(decoratedReport)
 	if err := encoder.Encode(&report); err != nil {
 		rs.Logger.Log("msg", "failed to encode", "report_type", report.GetType(), "error", err)

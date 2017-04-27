@@ -1,10 +1,11 @@
 package frontreport
 
 // Reportable structs can be saved to Elastic
-// - their Type defines index to save to;
+// - their Type and Service defines index to save to;
 // - they can hold Timestamp for Elastic to sort on.
 type Reportable interface {
 	GetType() string
+	GetService() string
 	SetTimestamp(string)
 	SetHost(string)
 }
@@ -13,6 +14,7 @@ type Reportable interface {
 type Report struct {
 	Timestamp string `json:"@timestamp"`
 	Host      string `json:"frontreport-host"`
+	Service   string `json:"service"`
 }
 
 // SetTimestamp sets timestamp for Elastic default sorting
@@ -23,6 +25,11 @@ func (r *Report) SetTimestamp(ts string) {
 // SetHost sets hostname to tell apart reports from different sites
 func (r *Report) SetHost(h string) {
 	r.Host = h
+}
+
+// GetService returns service to tell apart reports from different sites
+func (r *Report) GetService() string {
+	return r.Service
 }
 
 // CSPReport is a Content Security Policy report as per http://www.w3.org/TR/CSP/
@@ -86,7 +93,7 @@ type StacktraceJSReport struct {
 	UserID    string `json:"userId,omitempty"`
 	StackHash string `json:"stackHash,omitempty"`
 	ScriptURL string `json:"scriptUrl,omitempty"`
-	
+
 	// These fields are experimental and can disappear in the future
 	PartyID         string `json:"partyId,omitempty"`
 	DepartmentID    string `json:"departmentId,omitempty"`

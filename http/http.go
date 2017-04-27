@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -17,12 +18,13 @@ import (
 
 // Handler processes incoming reports
 type Handler struct {
-	ReportStorage frontreport.ReportStorage
-	Port          string
-	Logger        frontreport.Logger
-	MetricStorage frontreport.MetricStorage
-	tomb          tomb.Tomb
-	metrics       struct {
+	ReportStorage    frontreport.ReportStorage
+	Port             string
+	ServiceWhitelist map[string]bool
+	Logger           frontreport.Logger
+	MetricStorage    frontreport.MetricStorage
+	tomb             tomb.Tomb
+	metrics          struct {
 		total  map[string]frontreport.MetricCounter
 		errors map[string]frontreport.MetricCounter
 	}
@@ -135,6 +137,11 @@ func (h *Handler) processReport(body io.Reader, report frontreport.Reportable, h
 		h.Logger.Log("msg", "cannot process JSON body", "report_type", report.GetType(), "error", err)
 		h.metrics.errors[report.GetType()].Inc(1)
 		return err
+	}
+	if len(h.ServiceWhitelist) > 0 && !h.ServiceWhitelist[report.GetService()] {
+		h.Logger.Log("msg", "service not in whitelist", "service", report.GetService(), "report_type", report.GetType())
+		h.metrics.errors[report.GetType()].Inc(1)
+		return errors.New("service not in whitelist")
 	}
 	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
 	report.SetHost(host)
