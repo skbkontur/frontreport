@@ -26,6 +26,7 @@ func main() {
 		Port               string `short:"p" long:"port" default:"8888" description:"port to listen" env:"FRONTREPORT_PORT"`
 		AMQPConnection     string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
 		ServiceWhitelist   string `short:"s" long:"service-whitelist" description:"allow reports only from this comma-separated list of services (allows all if not specified)" env:"FRONTREPORT_SERVICE_WHITELIST"`
+		DomainWhitelist    string `short:"d" long:"domain-whitelist" description:"allow CORS requests only from this comma-separated list of domains (allows all if not specified)" env:"FRONTREPORT_DOMAIN_WHITELIST"`
 		Logfile            string `short:"l" long:"logfile" description:"log file name (writes to stdout if not specified)" env:"FRONTREPORT_LOGFILE"`
 		GraphiteConnection string `short:"g" long:"graphite" description:"Graphite connection string for internal metrics" env:"FRONTREPORT_GRAPHITE"`
 		GraphitePrefix     string `short:"r" long:"graphite-prefix" description:"prefix for Graphite metrics" env:"FRONTREPORT_GRAPHITE_PREFIX"`
@@ -84,6 +85,13 @@ func main() {
 		handler.ServiceWhitelist = make(map[string]bool, len(serviceWhitelist))
 		for _, service := range serviceWhitelist {
 			handler.ServiceWhitelist[strings.TrimSpace(service)] = true
+		}
+	}
+	if opts.DomainWhitelist != "" {
+		domainWhitelist := strings.Split(opts.DomainWhitelist, ",")
+		handler.DomainWhitelist = make(map[string]bool, len(domainWhitelist))
+		for _, domain := range domainWhitelist {
+			handler.DomainWhitelist[strings.TrimSpace(domain)] = true
 		}
 	}
 

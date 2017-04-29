@@ -21,6 +21,7 @@ type Handler struct {
 	ReportStorage    frontreport.ReportStorage
 	Port             string
 	ServiceWhitelist map[string]bool
+	DomainWhitelist  map[string]bool
 	Logger           frontreport.Logger
 	MetricStorage    frontreport.MetricStorage
 	tomb             tomb.Tomb
@@ -78,12 +79,17 @@ func (h *Handler) Stop() error {
 }
 
 func (h *Handler) handleRequest(w http.ResponseWriter, r *http.Request) {
+	h.addCORSHeaders(w, r)
+
 	switch r.Method {
 	case http.MethodGet:
 		h.handleAsset(w, r)
 
 	case http.MethodPost:
 		h.handleReport(w, r)
+
+	case http.MethodOptions:
+		w.WriteHeader(http.StatusNoContent)
 
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -147,4 +153,15 @@ func (h *Handler) processReport(body io.Reader, report frontreport.Reportable, h
 	report.SetHost(host)
 	h.ReportStorage.AddReport(report)
 	return nil
+}
+
+func (h *Handler) addCORSHeaders(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	if len(h.DomainWhitelist) > 0 && !h.DomainWhitelist[origin] {
+		h.Logger.Log("msg", "domain not in whitelist", "domain", origin)
+		return
+	}
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
