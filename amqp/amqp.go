@@ -121,7 +121,6 @@ func (rs *ReportStorage) AddReport(report frontreport.Reportable) {
 		rs.Logger.Log("msg", "failed to encode", "report_type", report.GetType(), "error", err)
 		rs.metrics.reportEncodingErrors.Inc(1)
 	} else {
-		decoratedReport.WriteString("\n")
 		rs.muster.Work <- decoratedReport.Bytes()
 	}
 }
