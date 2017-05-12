@@ -1,13 +1,9 @@
 package http
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/tylerb/graceful"
@@ -94,74 +90,4 @@ func (h *Handler) handleRequest(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-}
-
-func (h *Handler) handleAsset(w http.ResponseWriter, r *http.Request) {
-	data, err := Asset(r.URL.Path[1:])
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		h.Logger.Log("msg", "cannot serve asset", "path", r.URL.Path, "error", err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/javascript; charset=utf-8") // only JS assets served for now
-	w.Write(data)
-}
-
-func (h *Handler) handleReport(w http.ResponseWriter, r *http.Request) {
-	switch {
-	case strings.Contains(r.URL.Path, "csp"):
-		report := &frontreport.CSPReport{}
-		if err := h.processReport(r.Body, report, r.Host); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	case strings.Contains(r.URL.Path, "pkp"):
-		report := &frontreport.PKPReport{}
-		if err := h.processReport(r.Body, report, r.Host); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	case strings.Contains(r.URL.Path, "stacktracejs"):
-		report := &frontreport.StacktraceJSReport{}
-		if err := h.processReport(r.Body, report, r.Host); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	default:
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (h *Handler) processReport(body io.Reader, report frontreport.Reportable, host string) error {
-	h.metrics.total[report.GetType()].Inc(1)
-
-	dec := json.NewDecoder(body)
-	if err := dec.Decode(report); err != nil {
-		h.Logger.Log("msg", "cannot process JSON body", "report_type", report.GetType(), "error", err)
-		h.metrics.errors[report.GetType()].Inc(1)
-		return err
-	}
-	if len(h.ServiceWhitelist) > 0 && !h.ServiceWhitelist[report.GetService()] {
-		h.Logger.Log("msg", "service not in whitelist", "service", report.GetService(), "report_type", report.GetType())
-		h.metrics.errors[report.GetType()].Inc(1)
-		return errors.New("service not in whitelist")
-	}
-	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
-	report.SetHost(host)
-	h.ReportStorage.AddReport(report)
-	return nil
-}
-
-func (h *Handler) addCORSHeaders(w http.ResponseWriter, r *http.Request) {
-	origin := r.Header.Get("Origin")
-	if len(h.DomainWhitelist) > 0 && !h.DomainWhitelist[origin] {
-		h.Logger.Log("msg", "domain not in whitelist", "domain", origin)
-		return
-	}
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }

@@ -6,9 +6,8 @@ LICENSE := "BSD"
 
 default: clean prepare test build rpm
 
-build:
-	mkdir build
-	cd cmd/frontreport && go build -ldflags "-X main.version=$(VERSION)-$(RELEASE)" -o ../../build/frontreport
+clean:
+	rm -rf build
 
 prepare:
 	go get github.com/kardianos/govendor
@@ -19,8 +18,9 @@ prepare:
 test: prepare
 	echo "No tests"
 
-clean:
-	rm -rf build
+build: prepare
+	mkdir build
+	cd cmd/frontreport && go build -ldflags "-X main.version=$(VERSION)-$(RELEASE)" -o ../../build/frontreport
 
 rpm: clean build
 	mkdir -p build/root/usr/bin
