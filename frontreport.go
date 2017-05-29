@@ -90,6 +90,7 @@ type StacktraceJSReport struct {
 		Version string `json:"version,omitempty"`
 	} `json:"os,omitempty"`
 	URL       string `json:"url,omitempty"`
+	SourceURL string `json:"sourceUrl,omitempty"`
 	UserID    string `json:"userId,omitempty"`
 	StackHash string `json:"stackHash,omitempty"`
 	ScriptURL string `json:"scriptUrl,omitempty"`
