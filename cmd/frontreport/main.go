@@ -54,8 +54,6 @@ func main() {
 	}
 	logger = log.NewContext(logger).With("ts", log.DefaultTimestampUTC)
 
-	logger.Log("msg", "starting program", "pid", os.Getpid())
-
 	metrics := &metrics.MetricStorage{
 		GraphiteConnectionString: opts.GraphiteConnection,
 		GraphitePrefix:           opts.GraphitePrefix,
@@ -99,6 +97,8 @@ func main() {
 	mustStart(storage)
 	mustStart(handler)
 
+	logger.Log("msg", "started", "pid", os.Getpid(), "version", version)
+
 	signalChannel := make(chan os.Signal)
 	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
 	logger.Log("msg", "received signal", "signal", <-signalChannel)
@@ -106,6 +106,8 @@ func main() {
 	mustStop(handler)
 	mustStop(storage)
 	mustStop(metrics)
+
+	logger.Log("msg", "stopped", "version", version)
 }
 
 func mustStart(service frontreport.Service) {
