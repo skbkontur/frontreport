@@ -63,7 +63,7 @@ func main() {
 	}
 
 	storage := &amqp.ReportStorage{
-		MaxBatchSize:         10,
+		MaxBatchSize:         1,
 		MaxConcurrentBatches: 10,
 		BatchTimeout:         time.Second,
 		PendingWorkCapacity:  100,

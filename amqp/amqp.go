@@ -136,7 +136,6 @@ func (b *batch) Add(item interface{}) {
 
 func (b *batch) Fire(notifier muster.Notifier) {
 	defer notifier.Done()
-	b.ReportStorage.Logger.Log("bulk", string(b.Items.Bytes()))
 	err := b.ReportStorage.publisher.Publish(
 		amqp.Publishing{
 			DeliveryMode: amqp.Transient,
