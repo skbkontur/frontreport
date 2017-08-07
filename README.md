@@ -9,7 +9,7 @@ Backend application → Logstash → RabbitMQ → Elastic RabbitMQ River → Ela
 
 You may want to reuse this infrastructure to collect frontend logs from browsers of your visitors. So, you need to replace Logstash in the above scheme with something fast that can validate incoming JSON and manage high load by batching documents.
 
-Frontreport does all that. Resulting architecture is something like:
+Frontreport does all that. Resulting architecture is something like the following:
 
 Browser → Frontreport → RabbitMQ → Elastic RabbitMQ River → Elastic → Kibana
 
