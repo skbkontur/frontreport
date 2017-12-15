@@ -14,14 +14,15 @@ import (
 
 // Handler processes incoming reports
 type Handler struct {
-	ReportStorage    frontreport.ReportStorage
-	Port             string
-	ServiceWhitelist map[string]bool
-	DomainWhitelist  map[string]bool
-	Logger           frontreport.Logger
-	MetricStorage    frontreport.MetricStorage
-	tomb             tomb.Tomb
-	metrics          struct {
+	ReportStorage      frontreport.ReportStorage
+	SourcemapProcessor frontreport.SourcemapProcessor
+	Port               string
+	ServiceWhitelist   map[string]bool
+	DomainWhitelist    map[string]bool
+	Logger             frontreport.Logger
+	MetricStorage      frontreport.MetricStorage
+	tomb               tomb.Tomb
+	metrics            struct {
 		total  map[string]frontreport.MetricCounter
 		errors map[string]frontreport.MetricCounter
 	}

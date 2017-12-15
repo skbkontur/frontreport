@@ -55,6 +55,12 @@ func (h *Handler) processReport(body io.Reader, report frontreport.Reportable, h
 	}
 	report.SetTimestamp(time.Now().UTC().Format("2006-01-02T15:04:05.999Z"))
 	report.SetHost(host)
+
+	switch report.(type) {
+	case *frontreport.StacktraceJSReport:
+		report.(*frontreport.StacktraceJSReport).Stack = h.SourcemapProcessor.ProcessStack(report.(*frontreport.StacktraceJSReport).Stack)
+	}
+
 	h.ReportStorage.AddReport(report)
 	return nil
 }

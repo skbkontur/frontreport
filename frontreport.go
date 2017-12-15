@@ -69,16 +69,19 @@ func (p PKPReport) GetType() string {
 	return "pkp"
 }
 
+// StacktraceJSStackframe is a single stack frame representation
+type StacktraceJSStackframe struct {
+	FunctionName string `json:"functionName"`
+	FileName     string `json:"fileName"`
+	LineNumber   int    `json:"lineNumber"`
+	ColumnNumber int    `json:"columnNumber"`
+}
+
 // StacktraceJSReport is a universal browser stacktrace format as per https://github.com/stacktracejs/stacktrace.js#stacktracereportstackframes-url-message--promisestring
 type StacktraceJSReport struct {
 	Report
-	Message string `json:"message"`
-	Stack   []struct {
-		FunctionName string `json:"functionName"`
-		FileName     string `json:"fileName"`
-		LineNumber   int    `json:"lineNumber"`
-		ColumnNumber int    `json:"columnNumber"`
-	} `json:"stack"`
+	Message string                   `json:"message"`
+	Stack   []StacktraceJSStackframe `json:"stack"`
 
 	// These fields are not a part of StacktraceJS specification, but are useful for error reports
 	Browser *struct {
@@ -111,4 +114,9 @@ func (s StacktraceJSReport) GetType() string {
 // ReportStorage is a way to store incoming reports
 type ReportStorage interface {
 	AddReport(Reportable)
+}
+
+// SourcemapProcessor converts stacktrace to readable format using sourcemaps
+type SourcemapProcessor interface {
+	ProcessStack([]StacktraceJSStackframe) []StacktraceJSStackframe
 }

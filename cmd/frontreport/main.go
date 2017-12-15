@@ -16,6 +16,7 @@ import (
 	"github.com/skbkontur/frontreport/amqp"
 	"github.com/skbkontur/frontreport/http"
 	"github.com/skbkontur/frontreport/metrics"
+	"github.com/skbkontur/frontreport/sourcemap"
 )
 
 var logger log.Logger
@@ -72,11 +73,16 @@ func main() {
 		MetricStorage:        metrics,
 	}
 
+	sourcemapProcessor := &sourcemap.Processor{
+		Logger: log.NewContext(logger).With("component", "sourcemap"),
+	}
+
 	handler := &http.Handler{
-		ReportStorage: storage,
-		Port:          opts.Port,
-		Logger:        log.NewContext(logger).With("component", "http"),
-		MetricStorage: metrics,
+		ReportStorage:      storage,
+		SourcemapProcessor: sourcemapProcessor,
+		Port:               opts.Port,
+		Logger:             log.NewContext(logger).With("component", "http"),
+		MetricStorage:      metrics,
 	}
 	if opts.ServiceWhitelist != "" {
 		serviceWhitelist := strings.Split(opts.ServiceWhitelist, ",")
@@ -95,6 +101,7 @@ func main() {
 
 	mustStart(metrics)
 	mustStart(storage)
+	mustStart(sourcemapProcessor)
 	mustStart(handler)
 
 	logger.Log("msg", "started", "pid", os.Getpid(), "version", version)
@@ -104,6 +111,7 @@ func main() {
 	logger.Log("msg", "received signal", "signal", <-signalChannel)
 
 	mustStop(handler)
+	mustStop(sourcemapProcessor)
 	mustStop(storage)
 	mustStop(metrics)
 
