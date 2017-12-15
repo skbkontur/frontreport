@@ -4,24 +4,30 @@ VENDOR := "SKB Kontur"
 URL := "https://github.com/skbkontur/frontreport"
 LICENSE := "BSD"
 
+.PHONY: default
 default: clean prepare test build rpm
 
+.PHONY: clean
 clean:
 	rm -rf build
 
+.PHONY: prepare
 prepare:
 	go get github.com/kardianos/govendor
 	govendor sync
 	go get github.com/jteeuwen/go-bindata/...
 	go-bindata -prefix "data/" -o "http/bindata.go" -pkg http data/...
 
+.PHONY: test
 test: prepare
 	echo "No tests"
 
+.PHONY: build
 build: prepare
-	mkdir build
+	mkdir -p build
 	cd cmd/frontreport && go build -ldflags "-X main.version=$(VERSION)-$(RELEASE)" -o ../../build/frontreport
 
+.PHONY: rpm
 rpm: clean build
 	mkdir -p build/root/usr/bin
 	cp build/frontreport build/root/usr/bin/
