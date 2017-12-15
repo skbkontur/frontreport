@@ -1,7 +1,7 @@
 language: go
 sudo: false
 go:
-- 1.8
+- 1.9
 addons:
   apt:
     packages:
@@ -29,11 +29,11 @@ deploy:
     script: "curl -sS --fail -F \"uploadfile=@${PACKAGE_NAME}\" -H 'token: ${UPLOAD_TOKEN}' \"${UPLOAD_URL}\""
     skip_cleanup: true
     on:
+      repo: skbkontur/frontreport
       branch: master
-      condition: $TRAVIS_GO_VERSION = 1.8
   - provider: script
     script: "curl -sS --fail -F \"uploadfile=@${PACKAGE_NAME}\" -H 'token: ${UPLOAD_TOKEN}' \"${UPLOAD_URL}\""
     skip_cleanup: true
     on:
+      repo: skbkontur/frontreport
       tags: true
-      condition: $TRAVIS_GO_VERSION = 1.8
