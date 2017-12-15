@@ -47,6 +47,7 @@ func (p *Processor) ProcessStack(stack []frontreport.StacktraceJSStackframe) []f
 			sMap, err = p.getMapFromJSURL(stack[i].FileName)
 			if err != nil {
 				p.Logger.Log("msg", "failed to get sourcemap from url", "error", err, "url", stack[i].FileName)
+				processedStack[i] = stack[i]
 				continue
 			}
 			p.cache.SetDefault(stack[i].FileName, sMap)
