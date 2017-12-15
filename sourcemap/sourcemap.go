@@ -63,6 +63,8 @@ func (p *Processor) ProcessStack(stack []frontreport.StacktraceJSStackframe) []f
 			if processedStack[i].FunctionName == "" {
 				processedStack[i].FunctionName = stack[i].FunctionName
 			}
+		} else {
+			processedStack[i] = stack[i]
 		}
 	}
 	return processedStack
