@@ -24,7 +24,7 @@ type Processor struct {
 // Start initializes sourcemaps cache
 func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
-	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)`)
+	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)$`)
 	return nil
 }
 
