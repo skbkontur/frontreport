@@ -4,10 +4,9 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"time"
-
-	"strings"
 
 	"github.com/go-sourcemap/sourcemap"
 	"github.com/patrickmn/go-cache"
@@ -24,7 +23,7 @@ type Processor struct {
 // Start initializes sourcemaps cache
 func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
-	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)$`)
+	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s+$`)
 	return nil
 }
 
@@ -87,14 +86,19 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 	if len(matches) < 2 {
 		return nil, errors.New("failed to find sourcemap URL in JS file")
 	}
-	smapURL := string(matches[1])
+	smapPartialURL := string(matches[1])
 
-	if !strings.Contains(smapURL, "/") {
-		baseURL := jsURL[:strings.LastIndex(jsURL, "/")+1]
-		smapURL = baseURL + smapURL
+	baseURL, err := url.Parse(jsURL)
+	if err != nil {
+		return nil, err
 	}
 
-	smapResp, err := http.Get(smapURL)
+	smapURL, err := baseURL.Parse(smapPartialURL)
+	if err != nil {
+		return nil, err
+	}
+
+	smapResp, err := http.Get(smapURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -105,5 +109,5 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	return sourcemap.Parse(smapURL, smapBody)
+	return sourcemap.Parse(smapURL.String(), smapBody)
 }
