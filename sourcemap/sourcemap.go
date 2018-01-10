@@ -1,8 +1,8 @@
 package sourcemap
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -16,16 +16,18 @@ import (
 
 // Processor converts stacktrace to readable format using sourcemaps
 type Processor struct {
-	Providers     string
-	Logger        frontreport.Logger
-	cache         *cache.Cache
-	smapURLRegexp *regexp.Regexp
+	Providers        string
+	Logger           frontreport.Logger
+	cache            *cache.Cache
+	smapURLRegexp    *regexp.Regexp
+	trustedURLRegexp *regexp.Regexp
 }
 
 // Start initializes sourcemaps cache
 func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
 	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s+$`)
+	p.trustedURLRegexp = regexp.MustCompile(p.Providers)
 	return nil
 }
 
@@ -104,12 +106,12 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	smapUrlString := smapURL.String()
-	if err := p.checkIfTrusted(smapUrlString); err != nil {
+	smapURLString := smapURL.String()
+	if err = p.checkIfTrusted(smapURLString); err != nil {
 		return nil, err
 	}
 
-	smapResp, err := http.Get(smapUrlString)
+	smapResp, err := http.Get(smapURLString)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +126,7 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 }
 
 func (p *Processor) checkIfTrusted(urlToCheck string) error {
-	if matched, _ := regexp.MatchString(p.Providers, urlToCheck); matched {
+	if matched := p.trustedURLRegexp.MatchString(urlToCheck); matched {
 		return nil
 	}
 	return fmt.Errorf("%s doesn't match trusted providers pattern: %s", urlToCheck, p.Providers)
