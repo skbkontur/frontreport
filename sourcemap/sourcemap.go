@@ -1,6 +1,7 @@
 package sourcemap
 
 import (
+	"fmt"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 
 // Processor converts stacktrace to readable format using sourcemaps
 type Processor struct {
+	Providers     string
 	Logger        frontreport.Logger
 	cache         *cache.Cache
 	smapURLRegexp *regexp.Regexp
@@ -71,6 +73,10 @@ func (p *Processor) ProcessStack(stack []frontreport.StacktraceJSStackframe) []f
 }
 
 func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
+	if err := p.checkIfTrusted(jsURL); err != nil {
+		return nil, err
+	}
+
 	jsResp, err := http.Get(jsURL)
 	if err != nil {
 		return nil, err
@@ -98,7 +104,12 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	smapResp, err := http.Get(smapURL.String())
+	smapUrlString := smapURL.String()
+	if err := p.checkIfTrusted(smapUrlString); err != nil {
+		return nil, err
+	}
+
+	smapResp, err := http.Get(smapUrlString)
 	if err != nil {
 		return nil, err
 	}
@@ -110,4 +121,11 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 	}
 
 	return sourcemap.Parse(smapURL.String(), smapBody)
+}
+
+func (p *Processor) checkIfTrusted(urlToCheck string) error {
+	if matched, _ := regexp.MatchString(p.Providers, urlToCheck); matched {
+		return nil
+	}
+	return fmt.Errorf("%s doesn't match trusted providers pattern: %s", urlToCheck, p.Providers)
 }
