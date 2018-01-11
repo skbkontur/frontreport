@@ -2,6 +2,7 @@ package sourcemap
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -15,15 +16,18 @@ import (
 
 // Processor converts stacktrace to readable format using sourcemaps
 type Processor struct {
-	Logger        frontreport.Logger
-	cache         *cache.Cache
-	smapURLRegexp *regexp.Regexp
+	Trusted          string
+	Logger           frontreport.Logger
+	cache            *cache.Cache
+	smapURLRegexp    *regexp.Regexp
+	trustedURLRegexp *regexp.Regexp
 }
 
 // Start initializes sourcemaps cache
 func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
 	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s+$`)
+	p.trustedURLRegexp = regexp.MustCompile(p.Trusted)
 	return nil
 }
 
@@ -71,6 +75,10 @@ func (p *Processor) ProcessStack(stack []frontreport.StacktraceJSStackframe) []f
 }
 
 func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
+	if err := p.checkIfTrusted(jsURL); err != nil {
+		return nil, err
+	}
+
 	jsResp, err := http.Get(jsURL)
 	if err != nil {
 		return nil, err
@@ -98,7 +106,12 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	smapResp, err := http.Get(smapURL.String())
+	smapURLString := smapURL.String()
+	if err = p.checkIfTrusted(smapURLString); err != nil {
+		return nil, err
+	}
+
+	smapResp, err := http.Get(smapURLString)
 	if err != nil {
 		return nil, err
 	}
@@ -110,4 +123,11 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 	}
 
 	return sourcemap.Parse(smapURL.String(), smapBody)
+}
+
+func (p *Processor) checkIfTrusted(urlToCheck string) error {
+	if matched := p.trustedURLRegexp.MatchString(urlToCheck); matched {
+		return nil
+	}
+	return fmt.Errorf("%s doesn't match trusted pattern: %s", urlToCheck, p.Trusted)
 }
