@@ -23,12 +23,15 @@ Usage:
   frontreport [OPTIONS]
 
 Application Options:
-  -p, --port=            port to listen (default: 8888) [$FRONTREPORT_PORT]
-  -a, --amqp=            AMQP connection string (default: amqp://guest:guest@localhost:5672/) [$FRONTREPORT_AMQP]
-  -l, --logfile=         log file name (writes to stdout if not specified) [$FRONTREPORT_LOGFILE]
-  -g, --graphite=        Graphite connection string for internal metrics [$FRONTREPORT_GRAPHITE]
-  -r, --graphite-prefix= prefix for Graphite metrics [$FRONTREPORT_GRAPHITE_PREFIX]
-  -v, --version          print version and exit
+  -p, --port=                port to listen (default: 8888) [$FRONTREPORT_PORT]
+  -a, --amqp=                AMQP connection string (default: amqp://guest:guest@localhost:5672/) [$FRONTREPORT_AMQP]
+  -s, --service-whitelist=   list of services to accept reports from (all are allowed if not specified) [$FRONTREPORT_SERVICE_WHITELIST]
+  -d, --domain-whitelist=    list of domains to accept CORS requests from (all are allowed if not specified) [$FRONTREPORT_DOMAIN_WHITELIST]
+  -t, --sourcemap-whitelist= trusted sourcemap pattern (default: ^(http|https)://localhost/) [$FRONTREPORT_SOURCEMAP_WHITELIST]
+  -l, --logfile=             log file name (writes to stdout if not specified) [$FRONTREPORT_LOGFILE]
+  -g, --graphite=            Graphite connection string for internal metrics [$FRONTREPORT_GRAPHITE]
+  -r, --graphite-prefix=     prefix for Graphite metrics [$FRONTREPORT_GRAPHITE_PREFIX]
+  -v, --version              print version and exit
 
 Help Options:
   -h, --help             Show this help message

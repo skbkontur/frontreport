@@ -14,6 +14,12 @@ import (
 	"github.com/skbkontur/frontreport"
 )
 
+var client = http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
+
 // Processor converts stacktrace to readable format using sourcemaps
 type Processor struct {
 	Trusted          string
@@ -79,7 +85,7 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	jsResp, err := http.Get(jsURL)
+	jsResp, err := client.Get(jsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +117,7 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	smapResp, err := http.Get(smapURLString)
+	smapResp, err := client.Get(smapURLString)
 	if err != nil {
 		return nil, err
 	}

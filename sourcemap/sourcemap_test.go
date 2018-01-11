@@ -32,7 +32,7 @@ func TestCheckIfTrusted(t *testing.T) {
 	}
 
 	testprocessor := Processor{
-		Trusted: "^(http|https)://localhost/[^.]*",
+		Trusted: "^(http|https)://localhost/",
 	}
 
 	testprocessor.Start()

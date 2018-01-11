@@ -28,7 +28,7 @@ func main() {
 		AMQPConnection     string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
 		ServiceWhitelist   string `short:"s" long:"service-whitelist" description:"allow reports only from this comma-separated list of services (allows all if not specified)" env:"FRONTREPORT_SERVICE_WHITELIST"`
 		DomainWhitelist    string `short:"d" long:"domain-whitelist" description:"allow CORS requests only from this comma-separated list of domains (allows all if not specified)" env:"FRONTREPORT_DOMAIN_WHITELIST"`
-		SourceMapWhitelist string `short:"t" long:"sourcemap-whitelist" description:"trusted sourcemap pattern (regular expression), trust localhost only if not specified" env:"FRONTREPORT_SOURCEMAP_WHITELIST"`
+		SourceMapWhitelist string `short:"t" long:"sourcemap-whitelist" default:"^(http|https)://localhost/" description:"trusted sourcemap pattern (regular expression), trust localhost only if not specified" env:"FRONTREPORT_SOURCEMAP_WHITELIST"`
 		Logfile            string `short:"l" long:"logfile" description:"log file name (writes to stdout if not specified)" env:"FRONTREPORT_LOGFILE"`
 		GraphiteConnection string `short:"g" long:"graphite" description:"Graphite connection string for internal metrics" env:"FRONTREPORT_GRAPHITE"`
 		GraphitePrefix     string `short:"r" long:"graphite-prefix" description:"prefix for Graphite metrics" env:"FRONTREPORT_GRAPHITE_PREFIX"`
@@ -57,8 +57,7 @@ func main() {
 	logger = log.NewContext(logger).With("ts", log.DefaultTimestampUTC)
 
 	sourceMapWhitelist := opts.SourceMapWhitelist
-	if sourceMapWhitelist == "" {
-		sourceMapWhitelist = "^(http|https)://localhost/[^.]*"
+	if sourceMapWhitelist.IsSetDefault() == true {
 		logger.Log("msg", "trusted sourcemap pattern not found, using localhost")
 	}
 
