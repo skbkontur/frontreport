@@ -103,6 +103,12 @@
 			"path": "gopkg.in/tomb.v2",
 			"revision": "14b3d72120e8d10ea6e6b7f87f7175734b1faab8",
 			"revisionTime": "2014-06-26T14:46:23Z"
+		},
+		{
+			"checksumSHA1": "f4m09DHEetaanti/GqUJzyCBTaI=",
+			"path": "github.com/smartystreets/goconvey/convey",
+			"revision": "9e8dc3f972df6c8fcc0375ef492c24d0bb204857",
+			"revisionTime": "2017-06-02T16:46:21Z"
 		}
 	],
 	"rootPath": "github.com/skbkontur/frontreport"

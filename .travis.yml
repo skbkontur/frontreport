@@ -8,6 +8,8 @@ addons:
       rpm
 install:
   - gem install fpm
+before_script:
+  - make test
 script:
   - make prepare
   - make rpm

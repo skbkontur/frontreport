@@ -20,7 +20,7 @@ prepare:
 
 .PHONY: test
 test: prepare
-	echo "No tests"
+	go test /sourcemap/sourcemap_test.go /sourcemap/sourcemap.go
 
 .PHONY: build
 build: prepare
