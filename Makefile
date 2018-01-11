@@ -20,7 +20,7 @@ prepare:
 
 .PHONY: test
 test: prepare
-	echo "No tests"
+	go test -v ./...
 
 .PHONY: build
 build: prepare

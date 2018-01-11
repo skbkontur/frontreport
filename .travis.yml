@@ -1,3 +1,4 @@
+go_import_path: github.com/skbkontur/frontreport
 language: go
 sudo: false
 go:
@@ -8,6 +9,8 @@ addons:
       rpm
 install:
   - gem install fpm
+before_script:
+  - make test
 script:
   - make prepare
   - make rpm
