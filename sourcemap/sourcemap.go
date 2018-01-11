@@ -16,7 +16,7 @@ import (
 
 // Processor converts stacktrace to readable format using sourcemaps
 type Processor struct {
-	Providers        string
+	Trusted          string
 	Logger           frontreport.Logger
 	cache            *cache.Cache
 	smapURLRegexp    *regexp.Regexp
@@ -27,7 +27,7 @@ type Processor struct {
 func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
 	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s+$`)
-	p.trustedURLRegexp = regexp.MustCompile(p.Providers)
+	p.trustedURLRegexp = regexp.MustCompile(p.Trusted)
 	return nil
 }
 
@@ -129,5 +129,5 @@ func (p *Processor) checkIfTrusted(urlToCheck string) error {
 	if matched := p.trustedURLRegexp.MatchString(urlToCheck); matched {
 		return nil
 	}
-	return fmt.Errorf("%s doesn't match trusted providers pattern: %s", urlToCheck, p.Providers)
+	return fmt.Errorf("%s doesn't match trusted pattern: %s", urlToCheck, p.Trusted)
 }
