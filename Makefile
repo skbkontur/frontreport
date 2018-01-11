@@ -20,7 +20,7 @@ prepare:
 
 .PHONY: test
 test: prepare
-	go test /sourcemap/sourcemap_test.go /sourcemap/sourcemap.go
+	go test -v ./...
 
 .PHONY: build
 build: prepare
