@@ -1,7 +1,6 @@
 package sourcemap
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -21,6 +20,16 @@ type Processor struct {
 	cache            *cache.Cache
 	smapURLRegexp    *regexp.Regexp
 	trustedURLRegexp *regexp.Regexp
+	client           *http.Client
+}
+
+func createHttpClient() (*http.Client) {
+	client := &http.Client {
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return fmt.Errorf("attempt to use redirects")
+		},
+	}
+	return client
 }
 
 // Start initializes sourcemaps cache
@@ -28,6 +37,7 @@ func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
 	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s+$`)
 	p.trustedURLRegexp = regexp.MustCompile(p.Trusted)
+	p.client = createHttpClient()
 	return nil
 }
 
@@ -79,7 +89,7 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	jsResp, err := http.Get(jsURL)
+	jsResp, err := p.client.Get(jsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +102,7 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 
 	matches := p.smapURLRegexp.FindSubmatch(jsBody)
 	if len(matches) < 2 {
-		return nil, errors.New("failed to find sourcemap URL in JS file")
+		return nil, fmt.Errorf("failed to find sourcemap URL in JS file")
 	}
 	smapPartialURL := string(matches[1])
 
@@ -111,7 +121,7 @@ func (p *Processor) getMapFromJSURL(jsURL string) (*sourcemap.Consumer, error) {
 		return nil, err
 	}
 
-	smapResp, err := http.Get(smapURLString)
+	smapResp, err := p.client.Get(smapURLString)
 	if err != nil {
 		return nil, err
 	}

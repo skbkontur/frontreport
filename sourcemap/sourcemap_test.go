@@ -1,6 +1,8 @@
 package sourcemap
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -32,7 +34,7 @@ func TestCheckIfTrusted(t *testing.T) {
 	}
 
 	testprocessor := Processor{
-		Trusted: "^(http|https)://localhost/[^.]*",
+		Trusted: "^(http|https)://localhost/",
 	}
 
 	testprocessor.Start()
@@ -50,5 +52,42 @@ func TestCheckIfTrusted(t *testing.T) {
 			So(err, ShouldBeError)
 		}
 	})
+}
 
+// TestHttpClient tests httpClient doesn't follows redirects from SourceMapWhitelist-matched trustedURLs
+func TestHttpClient(t *testing.T) {
+
+	Convey("Process Get without redirects", t, func() {
+		ts := httptest.NewServer(
+			http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {},
+			),
+		)
+		defer ts.Close()
+
+		testprocessor := Processor{}
+		testprocessor.Start()
+
+		response, err := testprocessor.client.Get(ts.URL)
+		So(response.StatusCode, ShouldEqual, 200)
+		So(err, ShouldBeNil)
+	})
+
+	Convey("Redirect attempt must fail", t, func() {
+		ts := httptest.NewServer(
+			http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					http.Redirect(w, r, "http://www.google.com", 301)
+				},
+			),
+		)
+		defer ts.Close()
+
+		testprocessor := Processor{}
+		testprocessor.Start()
+
+		response, err := testprocessor.client.Get(ts.URL)
+		So(response.StatusCode, ShouldEqual, 301)
+		So(err, ShouldBeError)
+	})
 }
