@@ -56,11 +56,6 @@ func main() {
 	}
 	logger = log.NewContext(logger).With("ts", log.DefaultTimestampUTC)
 
-	sourceMapWhitelist := opts.SourceMapWhitelist
-	if sourceMapWhitelist.IsSetDefault() == true {
-		logger.Log("msg", "trusted sourcemap pattern not found, using localhost")
-	}
-
 	metrics := &metrics.MetricStorage{
 		GraphiteConnectionString: opts.GraphiteConnection,
 		GraphitePrefix:           opts.GraphitePrefix,
@@ -79,8 +74,12 @@ func main() {
 		MetricStorage:        metrics,
 	}
 
+	if opts.SourceMapWhitelist == "^(http|https)://localhost/" {
+		logger.Log("msg", "trusted sourcemap pattern not found, using localhost")
+	}
+
 	sourcemapProcessor := &sourcemap.Processor{
-		Trusted: sourceMapWhitelist,
+		Trusted: opts.SourceMapWhitelist,
 		Logger:  log.NewContext(logger).With("component", "sourcemap"),
 	}
 

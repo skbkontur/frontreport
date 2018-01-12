@@ -34,7 +34,7 @@ Application Options:
   -v, --version              print version and exit
 
 Help Options:
-  -h, --help             Show this help message
+  -h, --help                 Show this help message
 ```
 
 
