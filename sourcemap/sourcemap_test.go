@@ -57,7 +57,7 @@ func TestCheckIfTrusted(t *testing.T) {
 // TestHttpClient tests httpClient doesn't follows redirects from SourceMapWhitelist-matched trustedURLs
 func TestHttpClient(t *testing.T) {
 
-	Convey("Process Get to not redirecting host", t, func() {
+	Convey("Process Get without redirects", t, func() {
 		ts := httptest.NewServer(
 			http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {},
@@ -73,7 +73,7 @@ func TestHttpClient(t *testing.T) {
 		So(err, ShouldBeNil)
 	})
 
-	Convey("Process Get to redirecting host", t, func() {
+	Convey("Redirect attempt must fail", t, func() {
 		ts := httptest.NewServer(
 			http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
