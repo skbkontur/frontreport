@@ -13,6 +13,19 @@ import (
 	"github.com/skbkontur/frontreport"
 )
 
+// ErrSSRFAttempt used if SSRF attempt found
+type ErrSSRFAttempt struct {
+	serverSide bool
+}
+
+// ErrSSRFAttempt implementation
+func (err ErrSSRFAttempt) Error() string {
+	if err.serverSide == true {
+		return fmt.Sprint("request has been cancelled, server returned redirect response")
+	}
+	return fmt.Sprint("url doesn't match trusted pattern")
+}
+
 // Processor converts stacktrace to readable format using sourcemaps
 type Processor struct {
 	Trusted          string
@@ -26,7 +39,7 @@ type Processor struct {
 func createHttpClient() (*http.Client) {
 	client := &http.Client {
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return fmt.Errorf("attempt to use redirects")
+			return ErrSSRFAttempt{serverSide:true}
 		},
 	}
 	return client
@@ -139,5 +152,5 @@ func (p *Processor) checkIfTrusted(urlToCheck string) error {
 	if matched := p.trustedURLRegexp.MatchString(urlToCheck); matched {
 		return nil
 	}
-	return fmt.Errorf("%s doesn't match trusted pattern: %s", urlToCheck, p.Trusted)
+	return ErrSSRFAttempt{serverSide:false}
 }
