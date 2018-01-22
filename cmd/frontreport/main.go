@@ -34,7 +34,9 @@ func main() {
 		GraphitePrefix     string `short:"r" long:"graphite-prefix" description:"prefix for Graphite metrics" env:"FRONTREPORT_GRAPHITE_PREFIX"`
 		Version            bool   `short:"v" long:"version" description:"print version and exit"`
 	}
-	if _, err := flags.Parse(&opts); err != nil {
+
+	parser := flags.NewParser(&opts, flags.Default)
+	if _, err := parser.Parse(); err != nil {
 		os.Exit(0)
 	}
 
@@ -74,7 +76,8 @@ func main() {
 		MetricStorage:        metrics,
 	}
 
-	if opts.SourceMapWhitelist == "^(http|https)://localhost/" {
+	sourceMapWhitelist := parser.FindOptionByShortName('t')
+	if sourceMapWhitelist.IsSetDefault() {
 		logger.Log("msg", "trusted sourcemap pattern not found, using localhost")
 	}
 

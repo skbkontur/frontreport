@@ -1,6 +1,7 @@
 package sourcemap
 
 import (
+	"net/url"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -49,7 +50,7 @@ func TestCheckIfTrusted(t *testing.T) {
 	Convey("Using blackListedURLs", t, func() {
 		for _, URL := range blackListedURLs {
 			err := testprocessor.checkIfTrusted(URL)
-			So(err, ShouldBeError)
+			So(err, ShouldResemble, ErrSSRFAttempt{serverSide:false})
 		}
 	})
 }
@@ -74,10 +75,11 @@ func TestHttpClient(t *testing.T) {
 	})
 
 	Convey("Redirect attempt must fail", t, func() {
+		redirectUrl := "http://www.google.com"
 		ts := httptest.NewServer(
 			http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
-					http.Redirect(w, r, "http://www.google.com", 301)
+					http.Redirect(w, r, redirectUrl, 301)
 				},
 			),
 		)
@@ -88,6 +90,8 @@ func TestHttpClient(t *testing.T) {
 
 		response, err := testprocessor.client.Get(ts.URL)
 		So(response.StatusCode, ShouldEqual, 301)
-		So(err, ShouldBeError)
+		So(err, ShouldResemble, &url.Error {
+			"Get", redirectUrl, ErrSSRFAttempt{serverSide:true},
+			})
 	})
 }
