@@ -1,5 +1,7 @@
 package frontreport
 
+import "strings"
+
 // Reportable structs can be saved to Elastic
 // - their Type and Service defines index to save to;
 // - they can hold Timestamp for Elastic to sort on.
@@ -29,7 +31,7 @@ func (r *Report) SetHost(h string) {
 
 // GetService returns service to tell apart reports from different sites
 func (r *Report) GetService() string {
-	return r.Service
+	return strings.ToLower(r.Service)
 }
 
 // CSPReport is a Content Security Policy report as per http://www.w3.org/TR/CSP/
