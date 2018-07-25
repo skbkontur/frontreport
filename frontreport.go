@@ -106,6 +106,7 @@ type StacktraceJSReport struct {
 	SalesPointID    string `json:"salesPointId,omitempty"`
 	RetailUIVersion string `json:"retailUiVersion,omitempty"`
 	AppVersion      string `json:"appVersion,omitempty"`
+	ClaimID         string `json:"claimId,omitempty"`
 }
 
 // GetType returns report type
