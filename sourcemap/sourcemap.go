@@ -48,7 +48,7 @@ func createHttpClient() (*http.Client) {
 // Start initializes sourcemaps cache
 func (p *Processor) Start() error {
 	p.cache = cache.New(24*time.Hour, time.Hour)
-	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s+$`)
+	p.smapURLRegexp = regexp.MustCompile(`sourceMappingURL=(\S+)\s*$`)
 	p.trustedURLRegexp = regexp.MustCompile(p.Trusted)
 	p.client = createHttpClient()
 	return nil
