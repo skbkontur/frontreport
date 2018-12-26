@@ -2,7 +2,7 @@ go_import_path: github.com/skbkontur/frontreport
 language: go
 sudo: false
 go:
-- 1.9
+- 1.11
 addons:
   apt:
     packages:
