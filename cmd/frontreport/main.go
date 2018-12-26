@@ -7,13 +7,12 @@ import (
 	"reflect"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/jessevdk/go-flags"
 
 	"github.com/skbkontur/frontreport"
-	"github.com/skbkontur/frontreport/amqp"
+	"github.com/skbkontur/frontreport/hercules"
 	"github.com/skbkontur/frontreport/http"
 	"github.com/skbkontur/frontreport/metrics"
 	"github.com/skbkontur/frontreport/sourcemap"
@@ -26,6 +25,8 @@ func main() {
 	var opts struct {
 		Port               string `short:"p" long:"port" default:"8888" description:"port to listen" env:"FRONTREPORT_PORT"`
 		AMQPConnection     string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
+		HerculesEndpoint   string `short:"h" long:"hercules-endpoint" default:"http://localhost:8080" description:"Hercules endpoint" env:"FRONTREPORT_HERCULES_ENDPOINT"`
+		HerculesAPIKey     string `short:"k" long:"hercules-apikey" description:"Hercules API key" env:"FRONTREPORT_HERCULES_APIKEY"`
 		ServiceWhitelist   string `short:"s" long:"service-whitelist" description:"allow reports only from this comma-separated list of services (allows all if not specified)" env:"FRONTREPORT_SERVICE_WHITELIST"`
 		DomainWhitelist    string `short:"d" long:"domain-whitelist" description:"allow CORS requests only from this comma-separated list of domains (allows all if not specified)" env:"FRONTREPORT_DOMAIN_WHITELIST"`
 		SourceMapWhitelist string `short:"t" long:"sourcemap-whitelist" default:"^(http|https)://localhost/" description:"trusted sourcemap pattern (regular expression), trust localhost only if not specified" env:"FRONTREPORT_SOURCEMAP_WHITELIST"`
@@ -64,16 +65,11 @@ func main() {
 		Logger:                   log.NewContext(logger).With("component", "metrics"),
 	}
 
-	storage := &amqp.ReportStorage{
-		MaxBatchSize:         1,
-		MaxConcurrentBatches: 10,
-		BatchTimeout:         time.Second,
-		PendingWorkCapacity:  100,
-		ExchangeName:         "csp",
-		RoutingKey:           "csp",
-		AMQPConnectionString: opts.AMQPConnection,
-		Logger:               log.NewContext(logger).With("component", "amqp"),
-		MetricStorage:        metrics,
+	storage := &hercules.ReportStorage{
+		HerculesEndpoint: opts.HerculesEndpoint,
+		HerculesAPIKey:   opts.HerculesAPIKey,
+		Logger:           log.NewContext(logger).With("component", "hercules"),
+		MetricStorage:    metrics,
 	}
 
 	sourceMapWhitelist := parser.FindOptionByShortName('t')
