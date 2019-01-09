@@ -25,6 +25,8 @@ Usage:
 Application Options:
   -p, --port=                port to listen (default: 8888) [$FRONTREPORT_PORT]
   -a, --amqp=                AMQP connection string (default: amqp://guest:guest@localhost:5672/) [$FRONTREPORT_AMQP]
+  -e, --hercules-endpoint=   Hercules endpoint (default: http://localhost:8080) [$FRONTREPORT_HERCULES_ENDPOINT]
+  -k, --hercules-apikey=     Hercules API key [$FRONTREPORT_HERCULES_APIKEY]
   -s, --service-whitelist=   allow reports only from this comma-separated list of services (allows all if not specified) [$FRONTREPORT_SERVICE_WHITELIST]
   -d, --domain-whitelist=    allow CORS requests only from this comma-separated list of domains (allows all if not specified) [$FRONTREPORT_DOMAIN_WHITELIST]
   -t, --sourcemap-whitelist= trusted sourcemap pattern (regular expression), trust localhost only if not specified (default: ^(http|https)://localhost/) [$FRONTREPORT_SOURCEMAP_WHITELIST]
