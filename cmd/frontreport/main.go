@@ -25,7 +25,7 @@ func main() {
 	var opts struct {
 		Port               string `short:"p" long:"port" default:"8888" description:"port to listen" env:"FRONTREPORT_PORT"`
 		AMQPConnection     string `short:"a" long:"amqp" default:"amqp://guest:guest@localhost:5672/" description:"AMQP connection string" env:"FRONTREPORT_AMQP"`
-		HerculesEndpoint   string `short:"h" long:"hercules-endpoint" default:"http://localhost:8080" description:"Hercules endpoint" env:"FRONTREPORT_HERCULES_ENDPOINT"`
+		HerculesEndpoint   string `short:"e" long:"hercules-endpoint" default:"http://localhost:8080" description:"Hercules endpoint" env:"FRONTREPORT_HERCULES_ENDPOINT"`
 		HerculesAPIKey     string `short:"k" long:"hercules-apikey" description:"Hercules API key" env:"FRONTREPORT_HERCULES_APIKEY"`
 		ServiceWhitelist   string `short:"s" long:"service-whitelist" description:"allow reports only from this comma-separated list of services (allows all if not specified)" env:"FRONTREPORT_SERVICE_WHITELIST"`
 		DomainWhitelist    string `short:"d" long:"domain-whitelist" description:"allow CORS requests only from this comma-separated list of domains (allows all if not specified)" env:"FRONTREPORT_DOMAIN_WHITELIST"`
